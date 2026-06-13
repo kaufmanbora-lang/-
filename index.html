@@ -1,0 +1,4844 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Orbit Chat</title>
+  <meta name="theme-color" content="#071017">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="Orbit Chat">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="apple-touch-icon" href="/icon-192.png">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%23071117'/%3E%3Cpath d='M10 34c10-18 34-20 44-4-9 20-34 22-44 4Z' fill='none' stroke='%2346d9ff' stroke-width='5'/%3E%3Ccircle cx='32' cy='32' r='9' fill='%239eff8f'/%3E%3C/svg%3E">
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #071017;
+      --bg-2: #0b1621;
+      --panel: rgba(13, 26, 38, 0.9);
+      --panel-2: rgba(18, 35, 50, 0.78);
+      --line: rgba(151, 183, 204, 0.18);
+      --text: #eef8ff;
+      --muted: #8da5b8;
+      --soft: #c7d8e7;
+      --cyan: #46d9ff;
+      --lime: #9eff8f;
+      --pink: #ff6aa5;
+      --danger: #ff6b6b;
+      --shadow: 0 24px 80px rgba(0, 0, 0, 0.38);
+      --radius: 8px;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    html,
+    body {
+      height: 100%;
+      margin: 0;
+      overflow: hidden;
+      background:
+        radial-gradient(circle at 15% 18%, rgba(70, 217, 255, 0.16), transparent 28%),
+        radial-gradient(circle at 84% 8%, rgba(158, 255, 143, 0.12), transparent 24%),
+        linear-gradient(145deg, #050b10 0%, #08131c 48%, #0a151f 100%);
+      color: var(--text);
+    }
+
+    body {
+      user-select: none;
+    }
+
+    input,
+    textarea,
+    button {
+      font: inherit;
+    }
+
+    input,
+    textarea {
+      user-select: text;
+    }
+
+    button {
+      border: 0;
+      cursor: pointer;
+      color: inherit;
+    }
+
+    button:disabled {
+      cursor: not-allowed;
+      opacity: 0.5;
+    }
+
+    .hidden {
+      display: none !important;
+    }
+
+    .auth-shell {
+      min-height: 100dvh;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(340px, 460px);
+      gap: 44px;
+      align-items: center;
+      padding: 48px clamp(18px, 6vw, 78px);
+    }
+
+    .auth-copy {
+      max-width: 680px;
+    }
+
+    .brand-mark {
+      width: 60px;
+      height: 60px;
+      border-radius: 18px;
+      display: grid;
+      place-items: center;
+      background: linear-gradient(145deg, rgba(70, 217, 255, 0.26), rgba(158, 255, 143, 0.2));
+      border: 1px solid rgba(255, 255, 255, 0.13);
+      box-shadow: 0 16px 54px rgba(70, 217, 255, 0.16);
+      margin-bottom: 28px;
+    }
+
+    .brand-mark svg {
+      width: 36px;
+      height: 36px;
+      color: var(--cyan);
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(46px, 8vw, 96px);
+      line-height: 0.92;
+      letter-spacing: 0;
+    }
+
+    .auth-copy p {
+      margin: 24px 0 0;
+      max-width: 560px;
+      font-size: clamp(17px, 2vw, 22px);
+      line-height: 1.55;
+      color: var(--soft);
+    }
+
+    .signal-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 32px;
+    }
+
+    .signal {
+      padding: 11px 13px;
+      border-radius: 8px;
+      border: 1px solid var(--line);
+      background: rgba(255, 255, 255, 0.045);
+      color: var(--soft);
+      font-weight: 700;
+      font-size: 14px;
+    }
+
+    .auth-card {
+      width: 100%;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      background: linear-gradient(180deg, rgba(16, 32, 46, 0.96), rgba(8, 18, 27, 0.94));
+      box-shadow: var(--shadow);
+      border-radius: 8px;
+      padding: 24px;
+    }
+
+    .auth-tabs {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin-bottom: 22px;
+      padding: 4px;
+      border: 1px solid var(--line);
+      background: rgba(255, 255, 255, 0.035);
+      border-radius: 8px;
+    }
+
+    .auth-tabs button,
+    .ghost-button {
+      height: 44px;
+      border-radius: 7px;
+      background: transparent;
+      color: var(--muted);
+      font-weight: 800;
+    }
+
+    .auth-tabs button.active,
+    .primary-button {
+      background: linear-gradient(135deg, var(--cyan), var(--lime));
+      color: #031018;
+      box-shadow: 0 12px 34px rgba(70, 217, 255, 0.18);
+    }
+
+    .link-button {
+      min-height: 34px;
+      padding: 0;
+      justify-self: start;
+      background: transparent;
+      color: var(--cyan);
+      font-weight: 850;
+    }
+
+    .auth-help {
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.45;
+      margin: 0 0 4px;
+    }
+
+    .form-stack {
+      display: grid;
+      gap: 13px;
+    }
+
+    label {
+      display: grid;
+      gap: 7px;
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 800;
+    }
+
+    input,
+    textarea {
+      width: 100%;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: rgba(2, 8, 13, 0.62);
+      color: var(--text);
+      outline: 0;
+      padding: 13px 14px;
+      min-height: 48px;
+    }
+
+    textarea {
+      resize: none;
+      min-height: 86px;
+      line-height: 1.35;
+    }
+
+    input:focus,
+    textarea:focus {
+      border-color: rgba(70, 217, 255, 0.72);
+      box-shadow: 0 0 0 3px rgba(70, 217, 255, 0.11);
+    }
+
+    .primary-button {
+      min-height: 50px;
+      border-radius: 8px;
+      font-weight: 900;
+    }
+
+    .error-line {
+      min-height: 22px;
+      color: var(--danger);
+      font-size: 14px;
+      font-weight: 750;
+    }
+
+    .app-shell {
+      height: 100dvh;
+      display: grid;
+      grid-template-columns: 350px minmax(0, 1fr);
+      padding: 14px;
+      gap: 14px;
+    }
+
+    .side,
+    .chat {
+      border: 1px solid var(--line);
+      background: linear-gradient(180deg, rgba(13, 26, 38, 0.9), rgba(8, 18, 27, 0.86));
+      border-radius: 8px;
+      min-height: 0;
+      box-shadow: 0 24px 78px rgba(0, 0, 0, 0.22);
+      overflow: hidden;
+    }
+
+    .side {
+      display: grid;
+      grid-template-rows: auto auto auto minmax(0, 1fr) auto;
+    }
+
+    .side-top,
+    .chat-top {
+      padding: 16px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .side-brand {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .side-actions,
+    .chat-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex: 0 0 auto;
+    }
+
+    .brand-title {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      min-width: 0;
+    }
+
+    .mini-mark {
+      width: 38px;
+      height: 38px;
+      border-radius: 12px;
+      display: grid;
+      place-items: center;
+      background: rgba(70, 217, 255, 0.13);
+      border: 1px solid rgba(70, 217, 255, 0.22);
+      color: var(--cyan);
+      flex: 0 0 auto;
+    }
+
+    .brand-title strong,
+    .room-title strong {
+      display: block;
+      font-size: 18px;
+      line-height: 1.1;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .brand-title span,
+    .room-title span {
+      display: block;
+      margin-top: 3px;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 750;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .icon-button {
+      width: 42px;
+      height: 42px;
+      border-radius: 8px;
+      display: grid;
+      place-items: center;
+      background: rgba(255, 255, 255, 0.055);
+      color: var(--soft);
+      border: 1px solid rgba(255, 255, 255, 0.09);
+      flex: 0 0 auto;
+    }
+
+    .icon-button:hover,
+    .chat-row:hover,
+    .person-row:hover {
+      background: rgba(255, 255, 255, 0.075);
+    }
+
+    .icon-button.active {
+      color: #081018;
+      background: var(--accent);
+      border-color: rgba(70, 217, 255, 0.6);
+    }
+
+    .search-wrap {
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .search-wrap input {
+      min-height: 42px;
+      padding: 10px 12px;
+    }
+
+    .tabs {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 8px;
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .tabs button {
+      height: 40px;
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.045);
+      color: var(--muted);
+      font-weight: 900;
+    }
+
+    .tabs button.active {
+      background: rgba(70, 217, 255, 0.17);
+      color: var(--text);
+      border: 1px solid rgba(70, 217, 255, 0.28);
+    }
+
+    .list {
+      min-height: 0;
+      overflow: auto;
+      padding: 8px;
+      scrollbar-width: thin;
+      scrollbar-color: rgba(141, 165, 184, 0.36) transparent;
+    }
+
+    .chat-row,
+    .person-row {
+      width: 100%;
+      display: grid;
+      grid-template-columns: 44px minmax(0, 1fr) auto;
+      gap: 11px;
+      align-items: center;
+      text-align: left;
+      padding: 10px;
+      border-radius: 8px;
+      background: transparent;
+      color: var(--text);
+      min-height: 66px;
+    }
+
+    .chat-row.active {
+      background: linear-gradient(135deg, rgba(70, 217, 255, 0.17), rgba(158, 255, 143, 0.09));
+      border: 1px solid rgba(70, 217, 255, 0.22);
+    }
+
+    .person-row.saved {
+      background: rgba(158, 255, 143, 0.055);
+      border: 1px solid rgba(158, 255, 143, 0.16);
+    }
+
+    .avatar {
+      width: 44px;
+      height: 44px;
+      border-radius: 15px;
+      display: grid;
+      place-items: center;
+      color: #041017;
+      font-weight: 950;
+      position: relative;
+      box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.22);
+      overflow: hidden;
+      flex: 0 0 auto;
+    }
+
+    .avatar img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+      border-radius: inherit;
+    }
+
+    .avatar.small {
+      width: 34px;
+      height: 34px;
+      border-radius: 12px;
+      font-size: 13px;
+    }
+
+    .dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 999px;
+      background: #556473;
+      border: 2px solid #0d1a26;
+      position: absolute;
+      right: -1px;
+      bottom: -1px;
+    }
+
+    .dot.online {
+      background: var(--lime);
+    }
+
+    .row-main {
+      min-width: 0;
+    }
+
+    .row-main strong {
+      display: block;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      font-size: 15px;
+    }
+
+    .row-main span {
+      display: block;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.35;
+      margin-top: 3px;
+    }
+
+    .row-meta {
+      display: grid;
+      justify-items: end;
+      gap: 6px;
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 800;
+    }
+
+    .unread-badge {
+      min-width: 22px;
+      height: 22px;
+      padding: 0 7px;
+      border-radius: 999px;
+      display: inline-grid;
+      place-items: center;
+      background: linear-gradient(135deg, var(--cyan), var(--lime));
+      color: #031018;
+      font-size: 11px;
+      font-weight: 950;
+      box-shadow: 0 10px 22px rgba(70, 217, 255, 0.18);
+    }
+
+    .row-actions {
+      display: flex;
+      gap: 7px;
+      align-items: center;
+    }
+
+    .mini-action {
+      min-width: 38px;
+      height: 34px;
+      padding: 0 10px;
+      border-radius: 8px;
+      border: 1px solid var(--line);
+      background: rgba(255, 255, 255, 0.055);
+      color: var(--soft);
+      font-size: 12px;
+      font-weight: 900;
+    }
+
+    .mini-action.saved {
+      color: #061017;
+      background: var(--lime);
+      border-color: transparent;
+    }
+
+    .side-footer {
+      padding: 12px 16px;
+      border-top: 1px solid var(--line);
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .me-line {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      min-width: 0;
+    }
+
+    .me-line strong {
+      display: block;
+      max-width: 150px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      font-size: 14px;
+    }
+
+    .me-line span {
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 750;
+    }
+
+    .chat {
+      display: grid;
+      grid-template-rows: auto auto auto auto minmax(0, 1fr) auto;
+      position: relative;
+    }
+
+    .chat-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      min-width: 0;
+    }
+
+    .room-title {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      min-width: 0;
+    }
+
+    .back-button {
+      display: none;
+    }
+
+    .chat-tools {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 42px;
+      gap: 10px;
+      padding: 10px 14px;
+      border-top: 1px solid var(--line);
+      border-bottom: 1px solid var(--line);
+      background: rgba(255, 255, 255, 0.025);
+    }
+
+    .pin-strip {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 14px;
+      overflow-x: auto;
+      border-bottom: 1px solid var(--line);
+      background: rgba(255, 204, 102, 0.06);
+    }
+
+    .pin-pill {
+      flex: 0 0 auto;
+      max-width: min(360px, 70vw);
+      border: 1px solid rgba(255, 204, 102, 0.28);
+      border-radius: 8px;
+      background: rgba(255, 204, 102, 0.09);
+      color: var(--soft);
+      padding: 8px 10px;
+      font-size: 12px;
+      font-weight: 850;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .typing-line {
+      min-height: 28px;
+      padding: 6px 18px;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 850;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.055);
+    }
+
+    .messages {
+      overflow: auto;
+      padding: 22px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      scrollbar-width: thin;
+      scrollbar-color: rgba(141, 165, 184, 0.36) transparent;
+    }
+
+    .empty-state {
+      margin: auto;
+      width: min(420px, 100%);
+      text-align: center;
+      color: var(--muted);
+      line-height: 1.45;
+    }
+
+    .empty-state strong {
+      display: block;
+      color: var(--text);
+      margin-bottom: 8px;
+      font-size: 20px;
+    }
+
+    .msg {
+      display: grid;
+      grid-template-columns: 34px minmax(0, max-content);
+      gap: 9px;
+      max-width: min(72%, 720px);
+      align-items: end;
+    }
+
+    .msg.own {
+      align-self: flex-end;
+      grid-template-columns: minmax(0, max-content);
+    }
+
+    .bubble {
+      min-width: 0;
+      padding: 10px 12px 8px;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 8px 8px 8px 3px;
+      background: rgba(255, 255, 255, 0.075);
+      box-shadow: 0 10px 28px rgba(0, 0, 0, 0.12);
+      overflow-wrap: anywhere;
+      user-select: text;
+    }
+
+    .msg.own .bubble {
+      border-radius: 8px 8px 3px 8px;
+      background: linear-gradient(135deg, rgba(70, 217, 255, 0.28), rgba(158, 255, 143, 0.19));
+      border-color: rgba(70, 217, 255, 0.18);
+    }
+
+    .bubble-head {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 5px;
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 850;
+    }
+
+    .sender-link {
+      color: var(--cyan);
+      cursor: pointer;
+    }
+
+    .bubble-text {
+      color: var(--text);
+      font-size: 15px;
+      line-height: 1.4;
+      white-space: pre-wrap;
+    }
+
+    .bubble-text.deleted {
+      color: var(--muted);
+      font-style: italic;
+    }
+
+    .message-meta {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+      gap: 6px;
+      margin-top: 6px;
+      color: rgba(183, 205, 221, 0.78);
+      font-size: 10px;
+      font-weight: 850;
+    }
+
+    .msg-tools {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 5px;
+      margin-top: 8px;
+      opacity: 0.72;
+    }
+
+    .msg:hover .msg-tools,
+    .msg:focus-within .msg-tools {
+      opacity: 1;
+    }
+
+    .tool-chip,
+    .reaction-chip {
+      min-height: 26px;
+      border-radius: 8px;
+      border: 1px solid rgba(255, 255, 255, 0.09);
+      background: rgba(255, 255, 255, 0.055);
+      color: var(--soft);
+      font-size: 12px;
+      font-weight: 900;
+      padding: 0 8px;
+    }
+
+    .reaction-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 5px;
+      margin-top: 8px;
+    }
+
+    .reaction-chip.active {
+      color: #051018;
+      background: var(--accent);
+      border-color: rgba(70, 217, 255, 0.42);
+    }
+
+    .attachment-stack {
+      display: grid;
+      gap: 8px;
+      margin-top: 8px;
+    }
+
+    .attachment-image {
+      display: block;
+      overflow: hidden;
+      border-radius: 8px;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      background: rgba(0, 0, 0, 0.18);
+      max-width: min(360px, 72vw);
+    }
+
+    .attachment-image img {
+      width: 100%;
+      max-height: 320px;
+      object-fit: cover;
+      display: block;
+    }
+
+    .attachment-file {
+      display: grid;
+      grid-template-columns: 38px minmax(0, 1fr);
+      gap: 10px;
+      align-items: center;
+      min-width: min(320px, 70vw);
+      padding: 10px;
+      border-radius: 8px;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      background: rgba(255, 255, 255, 0.06);
+      color: var(--text);
+      text-decoration: none;
+    }
+
+    .file-icon {
+      width: 38px;
+      height: 38px;
+      border-radius: 8px;
+      display: grid;
+      place-items: center;
+      background: rgba(70, 217, 255, 0.16);
+      color: var(--cyan);
+      font-weight: 950;
+      font-size: 12px;
+    }
+
+    .attachment-file strong,
+    .attachment-file span {
+      display: block;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .attachment-file span {
+      margin-top: 3px;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    .attachment-audio {
+      min-width: min(360px, 74vw);
+      padding: 10px;
+      border-radius: 8px;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      background: rgba(255, 255, 255, 0.06);
+    }
+
+    .attachment-audio audio {
+      width: 100%;
+      min-width: 220px;
+      display: block;
+    }
+
+    .composer {
+      padding: 14px;
+      border-top: 1px solid var(--line);
+      display: grid;
+      grid-template-columns: 52px 52px minmax(0, 1fr) 54px;
+      gap: 10px;
+      background: rgba(3, 10, 15, 0.36);
+    }
+
+    .attachment-preview {
+      grid-column: 1 / -1;
+      display: grid;
+      grid-template-columns: 46px minmax(0, 1fr) 38px;
+      gap: 10px;
+      align-items: center;
+      padding: 9px;
+      border: 1px solid rgba(70, 217, 255, 0.22);
+      background: rgba(70, 217, 255, 0.08);
+      border-radius: 8px;
+    }
+
+    .edit-bar {
+      grid-column: 1 / -1;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 9px 10px;
+      border: 1px solid rgba(158, 255, 143, 0.22);
+      background: rgba(158, 255, 143, 0.07);
+      border-radius: 8px;
+      color: var(--soft);
+      font-size: 13px;
+      font-weight: 900;
+    }
+
+    .reply-bar {
+      grid-column: 1 / -1;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 10px;
+      align-items: center;
+      padding: 9px 10px;
+      border: 1px solid rgba(70, 217, 255, 0.22);
+      background: rgba(70, 217, 255, 0.075);
+      border-radius: 8px;
+      color: var(--soft);
+      font-size: 13px;
+      font-weight: 850;
+    }
+
+    .reply-bar strong,
+    .reply-bar span {
+      display: block;
+      min-width: 0;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .reply-preview {
+      margin: 0 0 8px;
+      padding: 8px 10px;
+      border-left: 3px solid var(--cyan);
+      background: rgba(70, 217, 255, 0.08);
+      border-radius: 8px;
+      color: var(--soft);
+      font-size: 12px;
+      font-weight: 800;
+      cursor: pointer;
+    }
+
+    .reply-preview strong,
+    .reply-preview span {
+      display: block;
+      max-width: 100%;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .edit-bar button,
+    .reply-bar button {
+      min-height: 30px;
+      padding: 0 10px;
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.06);
+      color: var(--soft);
+      border: 1px solid var(--line);
+      font-weight: 900;
+    }
+
+    .attachment-preview img {
+      width: 46px;
+      height: 46px;
+      object-fit: cover;
+      border-radius: 8px;
+    }
+
+    .voice-preview {
+      min-width: 0;
+      display: grid;
+      gap: 5px;
+    }
+
+    .voice-preview audio {
+      width: min(320px, 64vw);
+      max-width: 100%;
+    }
+
+    .attachment-preview strong,
+    .attachment-preview span {
+      display: block;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .attachment-preview span {
+      margin-top: 2px;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    .attach-button {
+      width: 52px;
+      min-height: 52px;
+    }
+
+    .voice-button.recording {
+      color: #051018;
+      background: #ff6b6b;
+      border-color: rgba(255, 107, 107, 0.7);
+    }
+
+    .composer textarea {
+      min-height: 52px;
+      max-height: 140px;
+      padding: 14px;
+      overflow: auto;
+    }
+
+    .send-button {
+      width: 54px;
+      min-height: 52px;
+      border-radius: 8px;
+      display: grid;
+      place-items: center;
+      background: linear-gradient(135deg, var(--cyan), var(--lime));
+      color: #031018;
+    }
+
+    .send-button svg,
+    .icon-button svg,
+    .mini-mark svg {
+      width: 20px;
+      height: 20px;
+      stroke-width: 2.2;
+    }
+
+    .toast {
+      position: fixed;
+      left: 50%;
+      bottom: 22px;
+      translate: -50% 0;
+      z-index: 20;
+      padding: 12px 16px;
+      border-radius: 8px;
+      background: rgba(5, 12, 18, 0.94);
+      border: 1px solid var(--line);
+      color: var(--text);
+      box-shadow: var(--shadow);
+      font-weight: 800;
+      max-width: min(92vw, 560px);
+    }
+
+    .network-banner {
+      position: fixed;
+      top: 14px;
+      left: 50%;
+      translate: -50% 0;
+      z-index: 28;
+      width: min(92vw, 520px);
+      padding: 11px 14px;
+      border: 1px solid rgba(255, 204, 102, 0.35);
+      border-radius: 8px;
+      background: rgba(32, 23, 8, 0.92);
+      color: #ffe2a4;
+      box-shadow: var(--shadow);
+      text-align: center;
+      font-size: 13px;
+      font-weight: 900;
+    }
+
+    .profile-panel {
+      position: fixed;
+      inset: 0;
+      z-index: 30;
+      display: grid;
+      place-items: center;
+      padding: 18px;
+      background: rgba(0, 0, 0, 0.5);
+      backdrop-filter: blur(8px);
+    }
+
+    .profile-card {
+      width: min(440px, 100%);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 20px;
+      background: linear-gradient(180deg, #102130, #08121b);
+      box-shadow: var(--shadow);
+    }
+
+    .profile-card h2 {
+      margin: 0 0 16px;
+      font-size: 24px;
+    }
+
+    .profile-avatar-editor {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 16px;
+      padding: 12px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.04);
+    }
+
+    .profile-avatar {
+      width: 72px;
+      height: 72px;
+      border-radius: 22px;
+      font-size: 22px;
+    }
+
+    .avatar-actions {
+      display: grid;
+      gap: 8px;
+      min-width: 0;
+    }
+
+    .profile-actions {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-top: 14px;
+    }
+
+    .user-profile-head {
+      display: grid;
+      justify-items: center;
+      gap: 10px;
+      text-align: center;
+      padding: 8px 0 14px;
+    }
+
+    .user-profile-head h2 {
+      margin: 0;
+      font-size: 26px;
+      line-height: 1.1;
+      overflow-wrap: anywhere;
+    }
+
+    .user-profile-head span {
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 850;
+    }
+
+    .user-bio {
+      min-height: 54px;
+      padding: 12px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.045);
+      color: var(--soft);
+      line-height: 1.45;
+      overflow-wrap: anywhere;
+    }
+
+    .user-actions {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 10px;
+      margin-top: 14px;
+    }
+
+    .user-actions.extended {
+      grid-template-columns: 1fr 1fr;
+    }
+
+    .media-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(128px, 1fr));
+      gap: 10px;
+      margin-top: 14px;
+      max-height: min(62dvh, 520px);
+      overflow: auto;
+    }
+
+    .media-item {
+      display: grid;
+      gap: 7px;
+      align-content: start;
+      min-height: 128px;
+      padding: 9px;
+      border-radius: 8px;
+      border: 1px solid var(--line);
+      background: rgba(255, 255, 255, 0.045);
+      color: var(--soft);
+      text-decoration: none;
+      font-size: 12px;
+      font-weight: 800;
+      overflow: hidden;
+    }
+
+    .media-thumb {
+      aspect-ratio: 1;
+      border-radius: 8px;
+      display: grid;
+      place-items: center;
+      overflow: hidden;
+      background: rgba(70, 217, 255, 0.12);
+      color: var(--cyan);
+      font-weight: 950;
+      font-size: 20px;
+    }
+
+    .media-thumb img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .room-member-row {
+      display: grid;
+      grid-template-columns: 34px minmax(0, 1fr) auto;
+      gap: 10px;
+      align-items: center;
+      padding: 9px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.04);
+    }
+
+    .role-pill {
+      justify-self: start;
+      display: inline-grid;
+      place-items: center;
+      min-height: 22px;
+      padding: 0 8px;
+      border-radius: 999px;
+      background: rgba(158, 255, 143, 0.12);
+      color: var(--lime);
+      font-size: 11px;
+      font-weight: 950;
+      margin-top: 4px;
+    }
+
+    .member-list {
+      max-height: min(310px, 42vh);
+      overflow: auto;
+      display: grid;
+      gap: 8px;
+      margin-top: 12px;
+      padding-right: 3px;
+    }
+
+    .member-option {
+      display: grid;
+      grid-template-columns: 34px minmax(0, 1fr) 22px;
+      gap: 10px;
+      align-items: center;
+      padding: 9px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.045);
+    }
+
+    .member-option input {
+      width: 18px;
+      height: 18px;
+      min-height: 18px;
+      padding: 0;
+      accent-color: var(--cyan);
+    }
+
+    .call-card {
+      width: min(780px, 96vw);
+      max-height: calc(100dvh - 36px);
+      overflow: auto;
+    }
+
+    .call-stage {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 180px;
+      gap: 12px;
+      margin-top: 14px;
+    }
+
+    .remote-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 12px;
+      min-width: 0;
+    }
+
+    .video-box {
+      min-height: 320px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      overflow: hidden;
+      background: #02070b;
+      position: relative;
+    }
+
+    .video-box.local {
+      min-height: 140px;
+    }
+
+    .video-box video {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+      background: #02070b;
+    }
+
+    .video-box.audio-only::before {
+      content: "Голос";
+      position: absolute;
+      inset: 50% auto auto 50%;
+      transform: translate(-50%, -50%);
+      width: 82px;
+      height: 82px;
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      color: #dffcff;
+      font-weight: 1000;
+      background: radial-gradient(circle, rgba(70, 217, 255, 0.28), rgba(114, 241, 184, 0.08));
+      border: 1px solid rgba(116, 243, 255, 0.35);
+      box-shadow: 0 0 34px rgba(70, 217, 255, 0.2);
+    }
+
+    .video-label {
+      position: absolute;
+      left: 10px;
+      bottom: 10px;
+      padding: 5px 8px;
+      border-radius: 8px;
+      background: rgba(0, 0, 0, 0.52);
+      color: var(--soft);
+      font-size: 12px;
+      font-weight: 900;
+    }
+
+    .call-status {
+      color: var(--muted);
+      font-weight: 850;
+      margin-top: 6px;
+    }
+
+    .call-diagnostics {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 12px;
+    }
+
+    .call-chip {
+      min-height: 30px;
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      padding: 0 10px;
+      border-radius: 8px;
+      border: 1px solid var(--line);
+      background: rgba(255, 255, 255, 0.055);
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 900;
+    }
+
+    .call-chip.ok {
+      color: #b7ffdf;
+      border-color: rgba(114, 241, 184, 0.28);
+    }
+
+    .call-chip.warn {
+      color: #ffe0a8;
+      border-color: rgba(255, 204, 102, 0.3);
+    }
+
+    .call-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 14px;
+      position: sticky;
+      bottom: 0;
+      z-index: 2;
+      padding-top: 12px;
+      background: linear-gradient(180deg, rgba(8, 18, 27, 0), #08121b 28%);
+    }
+
+    .danger-button {
+      min-height: 48px;
+      border-radius: 8px;
+      background: rgba(255, 107, 107, 0.16);
+      border: 1px solid rgba(255, 107, 107, 0.32);
+      color: #ffd2d2;
+      font-weight: 900;
+      padding: 0 16px;
+    }
+
+    #endCallButton {
+      min-width: 170px;
+      background: linear-gradient(135deg, #ff4d5f, #ff7a59);
+      border-color: rgba(255, 107, 107, 0.75);
+      color: white;
+      box-shadow: 0 14px 30px rgba(255, 77, 95, 0.22);
+    }
+
+    .ghost-outline {
+      min-height: 48px;
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.055);
+      border: 1px solid var(--line);
+      font-weight: 900;
+      color: var(--soft);
+    }
+
+    .ghost-outline:disabled {
+      opacity: 0.48;
+      cursor: not-allowed;
+    }
+
+    .notify-card {
+      width: min(560px, 100%);
+      max-height: calc(100dvh - 36px);
+      overflow: auto;
+    }
+
+    .notify-status {
+      display: grid;
+      gap: 8px;
+      margin: 14px 0;
+    }
+
+    .notify-row {
+      display: grid;
+      grid-template-columns: 18px minmax(0, 1fr);
+      gap: 10px;
+      align-items: start;
+      padding: 10px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.045);
+      color: var(--soft);
+      font-size: 13px;
+      line-height: 1.35;
+    }
+
+    .notify-row strong {
+      display: block;
+      margin-bottom: 2px;
+      color: var(--text);
+      font-size: 14px;
+    }
+
+    .notify-dot {
+      width: 10px;
+      height: 10px;
+      margin-top: 4px;
+      border-radius: 999px;
+      background: var(--danger);
+      box-shadow: 0 0 0 5px rgba(255, 107, 107, 0.12);
+    }
+
+    .notify-row.ok .notify-dot {
+      background: var(--lime);
+      box-shadow: 0 0 0 5px rgba(158, 255, 143, 0.12);
+    }
+
+    .notify-row.warn .notify-dot {
+      background: #ffcc66;
+      box-shadow: 0 0 0 5px rgba(255, 204, 102, 0.12);
+    }
+
+    .notify-help {
+      margin: 12px 0 0;
+      padding: 12px;
+      border: 1px solid rgba(70, 217, 255, 0.22);
+      border-radius: 8px;
+      background: rgba(70, 217, 255, 0.075);
+      color: var(--soft);
+      font-size: 13px;
+      line-height: 1.45;
+    }
+
+    .notify-actions {
+      grid-template-columns: 1fr 1fr 1fr 1fr;
+      position: sticky;
+      bottom: -20px;
+      z-index: 2;
+      padding-top: 12px;
+      padding-bottom: 2px;
+      background: linear-gradient(180deg, rgba(8, 18, 27, 0), #08121b 24%);
+    }
+
+    .install-note {
+      display: none;
+      color: var(--muted);
+      font-size: 12px;
+      padding: 0 16px 12px;
+    }
+
+    @media (max-width: 920px) {
+      .auth-shell {
+        grid-template-columns: 1fr;
+        gap: 28px;
+        align-items: start;
+        padding-top: 28px;
+      }
+
+      .auth-copy p {
+        max-width: 100%;
+      }
+    }
+
+    @media (max-width: 760px) {
+      body {
+        background: linear-gradient(180deg, #061019 0%, #0a1420 100%);
+      }
+
+      .auth-shell {
+        padding: 18px;
+      }
+
+      .auth-card {
+        padding: 18px;
+      }
+
+      .signal-row {
+        margin-top: 22px;
+      }
+
+      .app-shell {
+        display: block;
+        padding: 0;
+      }
+
+      .side,
+      .chat {
+        width: 100%;
+        height: 100dvh;
+        border-radius: 0;
+        border: 0;
+      }
+
+      .app-shell.chat-open .side {
+        display: none;
+      }
+
+      .app-shell:not(.chat-open) .chat {
+        display: none;
+      }
+
+      .back-button {
+        display: grid;
+      }
+
+      .chat-actions {
+        max-width: 48vw;
+        overflow-x: auto;
+        padding-bottom: 2px;
+        scrollbar-width: none;
+      }
+
+      .messages {
+        padding: 14px 12px;
+      }
+
+      .msg {
+        max-width: 88%;
+      }
+
+      .composer {
+        padding: 10px;
+        padding-bottom: max(10px, env(safe-area-inset-bottom));
+        grid-template-columns: 46px 46px minmax(0, 1fr) 50px;
+      }
+
+      .toast {
+        bottom: calc(112px + env(safe-area-inset-bottom));
+      }
+
+      .send-button {
+        width: 50px;
+      }
+
+      .attach-button {
+        width: 46px;
+      }
+
+      .row-actions {
+        flex-direction: column;
+        gap: 5px;
+      }
+
+      .mini-action {
+        width: 40px;
+        padding: 0;
+      }
+
+      .user-actions {
+        grid-template-columns: 1fr;
+      }
+
+      .notify-actions {
+        grid-template-columns: 1fr 1fr;
+        bottom: -18px;
+      }
+
+      .notify-help {
+        display: none;
+      }
+
+      .call-stage {
+        grid-template-columns: 1fr;
+      }
+
+      .call-panel {
+        padding: 0;
+        align-items: stretch;
+      }
+
+      .call-card {
+        width: 100%;
+        max-height: 100dvh;
+        min-height: 100dvh;
+        border-radius: 0;
+        display: flex;
+        flex-direction: column;
+      }
+
+      .call-stage {
+        flex: 1;
+        min-height: 0;
+        overflow: auto;
+      }
+
+      .remote-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .video-box {
+        min-height: 220px;
+      }
+
+      .video-box.local {
+        min-height: 120px;
+      }
+
+      .call-actions {
+        margin-top: auto;
+        padding: 12px 0 max(12px, env(safe-area-inset-bottom));
+        background: linear-gradient(180deg, rgba(8, 18, 27, 0), #08121b 22%);
+      }
+
+      #endCallButton {
+        flex: 1 1 100%;
+        min-height: 58px;
+        font-size: 16px;
+      }
+
+      .install-note {
+        display: block;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main id="authView" class="auth-shell">
+    <section class="auth-copy">
+      <div class="brand-mark" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none">
+          <path d="M4 12c3.5-7.2 12.5-7.2 16 0-3.5 7.2-12.5 7.2-16 0Z" stroke="currentColor"/>
+          <path d="M12 8.2a3.8 3.8 0 1 1 0 7.6 3.8 3.8 0 0 1 0-7.6Z" stroke="currentColor"/>
+        </svg>
+      </div>
+      <h1>Орбита</h1>
+      <p>Мессенджер, который можно выложить в интернет: регистрируешься, пишешь в общий чат или лично другу, а сообщения приходят с любого телефона и из любой страны.</p>
+      <div class="signal-row">
+        <div class="signal">Аккаунты</div>
+        <div class="signal">Общий чат</div>
+        <div class="signal">Личные сообщения</div>
+        <div class="signal">Телефон и ПК</div>
+      </div>
+    </section>
+
+    <section class="auth-card">
+      <div class="auth-tabs">
+        <button id="loginTab" class="active" type="button">Войти</button>
+        <button id="registerTab" type="button">Создать аккаунт</button>
+      </div>
+
+      <form id="loginForm" class="form-stack">
+        <label>Почта
+          <input id="loginEmail" type="email" autocomplete="email" placeholder="you@mail.com" required>
+        </label>
+        <label>Пароль
+          <input id="loginPassword" type="password" autocomplete="current-password" placeholder="Твой пароль" required>
+        </label>
+        <button class="primary-button" type="submit">Войти</button>
+        <button id="forgotPasswordButton" class="link-button" type="button">Забыли пароль?</button>
+      </form>
+
+      <form id="registerForm" class="form-stack hidden">
+        <label>Ник
+          <input id="registerNickname" type="text" autocomplete="nickname" placeholder="Твой ник" maxlength="24" required>
+        </label>
+        <label>Почта
+          <input id="registerEmail" type="email" autocomplete="email" placeholder="you@mail.com" required>
+        </label>
+        <label>Пароль
+          <input id="registerPassword" type="password" autocomplete="new-password" minlength="10" placeholder="Минимум 10 символов, буква и цифра" required>
+        </label>
+        <button class="primary-button" type="submit">Создать аккаунт</button>
+      </form>
+
+      <form id="resetRequestForm" class="form-stack hidden">
+        <p class="auth-help">Введи почту аккаунта. Если она зарегистрирована, придёт ссылка для нового пароля.</p>
+        <label>Почта
+          <input id="resetEmail" type="email" autocomplete="email" placeholder="you@mail.com">
+        </label>
+        <button class="primary-button" type="submit">Отправить ссылку</button>
+        <button id="backToLoginButton" class="link-button" type="button">Вернуться ко входу</button>
+      </form>
+
+      <form id="resetFinishForm" class="form-stack hidden">
+        <p class="auth-help">Придумай новый пароль: минимум 10 символов, буква и цифра.</p>
+        <label>Новый пароль
+          <input id="resetPassword" type="password" autocomplete="new-password" minlength="10" placeholder="Новый пароль">
+        </label>
+        <button class="primary-button" type="submit">Сохранить новый пароль</button>
+        <button id="cancelResetButton" class="link-button" type="button">Войти обычным способом</button>
+      </form>
+      <div id="authError" class="error-line"></div>
+    </section>
+  </main>
+
+  <main id="appView" class="app-shell hidden">
+    <aside class="side">
+      <div class="side-top">
+        <div class="side-brand">
+          <div class="brand-title">
+            <div class="mini-mark" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none">
+                <path d="M4 12c3.5-7.2 12.5-7.2 16 0-3.5 7.2-12.5 7.2-16 0Z" stroke="currentColor"/>
+                <path d="M12 8.2a3.8 3.8 0 1 1 0 7.6 3.8 3.8 0 0 1 0-7.6Z" stroke="currentColor"/>
+              </svg>
+            </div>
+            <div>
+              <strong>Орбита</strong>
+              <span id="onlineCount">0 онлайн</span>
+            </div>
+          </div>
+          <div class="side-actions">
+            <button id="notifyButton" class="icon-button" title="Уведомления" type="button">
+              <svg viewBox="0 0 24 24" fill="none">
+                <path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9" stroke="currentColor"/>
+                <path d="M10 21h4" stroke="currentColor"/>
+              </svg>
+            </button>
+            <button id="securityButton" class="icon-button" title="Безопасность" type="button">
+              <svg viewBox="0 0 24 24" fill="none">
+                <path d="M12 3 5 6v5c0 5 3 8 7 10 4-2 7-5 7-10V6l-7-3Z" stroke="currentColor"/>
+                <path d="M9.5 12.5 11 14l3.5-4" stroke="currentColor"/>
+              </svg>
+            </button>
+            <button id="newGroupButton" class="icon-button" title="Создать группу" type="button">
+              <svg viewBox="0 0 24 24" fill="none">
+                <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" stroke="currentColor"/>
+                <path d="M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8Z" stroke="currentColor"/>
+                <path d="M19 8v6" stroke="currentColor"/>
+                <path d="M22 11h-6" stroke="currentColor"/>
+              </svg>
+            </button>
+            <button id="profileButton" class="icon-button" title="Профиль" type="button">
+              <svg viewBox="0 0 24 24" fill="none">
+                <path d="M20 21a8 8 0 0 0-16 0" stroke="currentColor"/>
+                <path d="M12 13a5 5 0 1 0 0-10 5 5 0 0 0 0 10Z" stroke="currentColor"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="search-wrap">
+        <input id="searchInput" type="search" placeholder="Поиск людей по нику или почте">
+      </div>
+
+      <div class="tabs">
+        <button id="chatsTab" class="active" type="button">Чаты</button>
+        <button id="contactsTab" type="button">Контакты</button>
+      </div>
+
+      <div id="listView" class="list"></div>
+      <div class="install-note">На телефоне открой ссылку в браузере. Можно добавить на главный экран через меню браузера.</div>
+
+      <div class="side-footer">
+        <div class="me-line">
+          <div id="meAvatar" class="avatar small">Я</div>
+          <div>
+            <strong id="meName">...</strong>
+            <span>в сети</span>
+          </div>
+        </div>
+        <button id="logoutButton" class="icon-button" title="Выйти" type="button">
+          <svg viewBox="0 0 24 24" fill="none">
+            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" stroke="currentColor"/>
+            <path d="m16 17 5-5-5-5" stroke="currentColor"/>
+            <path d="M21 12H9" stroke="currentColor"/>
+          </svg>
+        </button>
+      </div>
+    </aside>
+
+    <section class="chat">
+      <header class="chat-top">
+        <div class="room-title">
+          <button id="backButton" class="icon-button back-button" title="Назад" type="button">
+            <svg viewBox="0 0 24 24" fill="none">
+              <path d="m15 18-6-6 6-6" stroke="currentColor"/>
+            </svg>
+          </button>
+          <div id="roomAvatar" class="avatar">О</div>
+          <div>
+            <strong id="roomName">Общий чат</strong>
+            <span id="roomSub">Все пользователи Orbit Chat</span>
+          </div>
+        </div>
+        <div class="chat-actions">
+          <button id="roomInfoButton" class="icon-button" title="Инфо чата" type="button">
+            <svg viewBox="0 0 24 24" fill="none">
+              <path d="M12 17v-5" stroke="currentColor"/>
+              <path d="M12 8h.01" stroke="currentColor"/>
+              <path d="M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20Z" stroke="currentColor"/>
+            </svg>
+          </button>
+          <button id="mediaButton" class="icon-button" title="Медиа чата" type="button">
+            <svg viewBox="0 0 24 24" fill="none">
+              <path d="M4 5h16v14H4z" stroke="currentColor"/>
+              <path d="m4 15 4-4 4 4 3-3 5 5" stroke="currentColor"/>
+              <path d="M15 9h.01" stroke="currentColor"/>
+            </svg>
+          </button>
+          <button id="audioCallButton" class="icon-button" title="Аудиозвонок" type="button">
+            <svg viewBox="0 0 24 24" fill="none">
+              <path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1 1 .4 2 .7 2.9a2 2 0 0 1-.4 2.1L8.1 10a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.4c.9.3 1.9.6 2.9.7A2 2 0 0 1 22 16.9Z" stroke="currentColor"/>
+            </svg>
+          </button>
+          <button id="callButton" class="icon-button" title="Видеозвонок" type="button">
+            <svg viewBox="0 0 24 24" fill="none">
+              <path d="M15 10 21 6v12l-6-4" stroke="currentColor"/>
+              <path d="M3 6h12v12H3z" stroke="currentColor"/>
+            </svg>
+          </button>
+          <button id="copyRoomLinkButton" class="icon-button" title="Скопировать ссылку на чат" type="button">
+            <svg viewBox="0 0 24 24" fill="none">
+              <path d="M10 13a5 5 0 0 0 7.1.2l2.1-2.1a5 5 0 0 0-7.1-7.1l-1.2 1.2" stroke="currentColor"/>
+              <path d="M14 11a5 5 0 0 0-7.1-.2l-2.1 2.1a5 5 0 0 0 7.1 7.1l1.2-1.2" stroke="currentColor"/>
+            </svg>
+          </button>
+          <button id="refreshButton" class="icon-button" title="Обновить" type="button">
+            <svg viewBox="0 0 24 24" fill="none">
+              <path d="M21 12a9 9 0 1 1-3-6.7" stroke="currentColor"/>
+              <path d="M21 3v6h-6" stroke="currentColor"/>
+            </svg>
+          </button>
+        </div>
+      </header>
+      <div class="chat-tools">
+        <input id="messageSearch" type="search" placeholder="Поиск в этом чате">
+        <button id="clearMessageSearch" class="icon-button" title="Очистить поиск" type="button">
+          <svg viewBox="0 0 24 24" fill="none">
+            <path d="M18 6 6 18" stroke="currentColor"/>
+            <path d="m6 6 12 12" stroke="currentColor"/>
+          </svg>
+        </button>
+      </div>
+      <div id="pinStrip" class="pin-strip hidden"></div>
+      <div id="typingLine" class="typing-line hidden"></div>
+      <div id="messagesView" class="messages"></div>
+      <form id="composer" class="composer">
+        <input id="fileInput" class="hidden" type="file" accept="image/*,audio/*,.pdf,.txt,.zip,.doc,.docx">
+        <div id="replyBar" class="reply-bar hidden"></div>
+        <div id="editBar" class="edit-bar hidden">
+          <span>Редактирование сообщения</span>
+          <button id="cancelEditButton" type="button">Отмена</button>
+        </div>
+        <div id="attachmentPreview" class="attachment-preview hidden"></div>
+        <button id="attachButton" class="icon-button attach-button" title="Прикрепить файл" type="button">
+          <svg viewBox="0 0 24 24" fill="none">
+            <path d="m21.4 11.6-8.8 8.8a6 6 0 0 1-8.5-8.5l9.2-9.2a4 4 0 0 1 5.7 5.7l-9.2 9.2a2 2 0 1 1-2.8-2.8l8.5-8.5" stroke="currentColor"/>
+          </svg>
+        </button>
+        <button id="voiceButton" class="icon-button attach-button voice-button" title="Записать голосовое" type="button">
+          <svg viewBox="0 0 24 24" fill="none">
+            <path d="M12 3a3 3 0 0 0-3 3v6a3 3 0 0 0 6 0V6a3 3 0 0 0-3-3Z" stroke="currentColor"/>
+            <path d="M5 11a7 7 0 0 0 14 0" stroke="currentColor"/>
+            <path d="M12 18v3" stroke="currentColor"/>
+          </svg>
+        </button>
+        <textarea id="messageInput" placeholder="Сообщение" maxlength="1200"></textarea>
+        <button class="send-button" type="submit" title="Отправить">
+          <svg viewBox="0 0 24 24" fill="none">
+            <path d="m22 2-7 20-4-9-9-4 20-7Z" stroke="currentColor"/>
+            <path d="M22 2 11 13" stroke="currentColor"/>
+          </svg>
+        </button>
+      </form>
+    </section>
+  </main>
+
+  <section id="profilePanel" class="profile-panel hidden">
+    <form id="profileForm" class="profile-card">
+      <h2>Профиль</h2>
+      <div class="profile-avatar-editor">
+        <div id="profileAvatarPreview" class="avatar profile-avatar">Я</div>
+        <div class="avatar-actions">
+          <button id="avatarButton" class="ghost-outline" type="button">Выбрать аватар</button>
+          <button id="removeAvatarButton" class="mini-action" type="button">Убрать</button>
+          <input id="avatarInput" class="hidden" type="file" accept="image/*">
+        </div>
+      </div>
+      <div class="form-stack">
+        <label>Ник
+          <input id="profileNickname" type="text" maxlength="24">
+        </label>
+        <label>Почта
+          <input id="profileEmail" type="email" autocomplete="email" placeholder="you@mail.com">
+        </label>
+        <div id="profileEmailStatus" class="notify-help"></div>
+        <label>О себе
+          <textarea id="profileBio" maxlength="120" placeholder="Короткий статус"></textarea>
+        </label>
+      </div>
+      <div class="profile-actions">
+        <button id="sendVerificationButton" class="ghost-outline" type="button">Подтвердить почту</button>
+        <button id="closeProfile" class="ghost-outline" type="button">Закрыть</button>
+        <button class="primary-button" type="submit">Сохранить</button>
+      </div>
+      <div id="profileError" class="error-line"></div>
+    </form>
+  </section>
+
+  <section id="userProfilePanel" class="profile-panel hidden">
+    <div class="profile-card">
+      <div class="user-profile-head">
+        <div id="viewProfileAvatar" class="avatar profile-avatar">?</div>
+        <h2 id="viewProfileName">Профиль</h2>
+        <span id="viewProfileStatus">не в сети</span>
+      </div>
+      <div id="viewProfileBio" class="user-bio">Нет описания.</div>
+      <div class="user-actions extended">
+        <button id="viewProfileChat" class="primary-button" type="button">Написать</button>
+        <button id="viewProfileContact" class="ghost-outline" type="button">Сохранить</button>
+        <button id="viewProfileBlock" class="danger-button" type="button">Заблокировать</button>
+        <button id="viewProfileReport" class="ghost-outline" type="button">Пожаловаться</button>
+        <button id="closeUserProfile" class="ghost-outline" type="button">Закрыть</button>
+      </div>
+    </div>
+  </section>
+
+  <section id="securityPanel" class="profile-panel hidden">
+    <div class="profile-card">
+      <div class="user-profile-head">
+        <h2>Безопасность</h2>
+        <span>Сессии, пароль и защита аккаунта</span>
+      </div>
+      <div id="securityStatus" class="notify-status"></div>
+      <div class="notify-help">
+        Если кажется, что кто-то вошел в аккаунт, сбрось другие входы и поменяй пароль.
+      </div>
+      <div class="profile-actions">
+        <button id="revokeSessionsButton" class="primary-button" type="button">Сбросить другие входы</button>
+        <button id="closeSecurityPanel" class="ghost-outline" type="button">Закрыть</button>
+      </div>
+      <div id="securityError" class="error-line"></div>
+    </div>
+  </section>
+
+  <section id="groupPanel" class="profile-panel hidden">
+    <form id="groupForm" class="profile-card">
+      <h2>Новая группа</h2>
+      <label>Название
+        <input id="groupName" type="text" maxlength="32" placeholder="Например: Друзья">
+      </label>
+      <div id="groupMembers" class="member-list"></div>
+      <div class="profile-actions">
+        <button id="closeGroupPanel" class="ghost-outline" type="button">Закрыть</button>
+        <button class="primary-button" type="submit">Создать</button>
+      </div>
+      <div id="groupError" class="error-line"></div>
+    </form>
+  </section>
+
+  <section id="roomPanel" class="profile-panel hidden">
+    <div class="profile-card notify-card">
+      <div class="user-profile-head">
+        <h2 id="roomPanelTitle">Чат</h2>
+        <span id="roomPanelSub">Информация и участники</span>
+      </div>
+      <div id="roomSettings" class="form-stack"></div>
+      <div id="roomMembers" class="member-list"></div>
+      <div class="profile-actions">
+        <button id="leaveGroupButton" class="danger-button hidden" type="button">Выйти</button>
+        <button id="closeRoomPanel" class="ghost-outline" type="button">Закрыть</button>
+      </div>
+      <div id="roomError" class="error-line"></div>
+    </div>
+  </section>
+
+  <section id="mediaPanel" class="profile-panel hidden">
+    <div class="profile-card notify-card">
+      <div class="user-profile-head">
+        <h2>Медиа чата</h2>
+        <span id="mediaPanelSub">Фото, файлы и голосовые</span>
+      </div>
+      <div id="mediaItems" class="media-grid"></div>
+      <div class="profile-actions">
+        <button id="closeMediaPanel" class="ghost-outline" type="button">Закрыть</button>
+      </div>
+      <div id="mediaError" class="error-line"></div>
+    </div>
+  </section>
+
+  <section id="notifyPanel" class="profile-panel hidden">
+    <div class="profile-card notify-card">
+      <div class="user-profile-head">
+        <h2>Уведомления</h2>
+        <span>Проверка push для телефона и экрана блокировки</span>
+      </div>
+      <div id="notifyStatus" class="notify-status"></div>
+      <div class="notify-help">
+        Для iPhone: открой HTTPS-ссылку Render в Safari, добавь Orbit Chat на главный экран, зайди через иконку приложения и нажми “Включить”. После этого уведомления смогут появляться на экране блокировки.
+      </div>
+      <div class="profile-actions notify-actions">
+        <button id="enableNotifyButton" class="primary-button" type="button">Включить</button>
+        <button id="installAppButton" class="ghost-outline" type="button">Установить</button>
+        <button id="testNotifyButton" class="ghost-outline" type="button">Тест</button>
+        <button id="copyAppLinkButton" class="ghost-outline" type="button">Ссылка</button>
+        <button id="closeNotifyPanel" class="ghost-outline" type="button">Закрыть</button>
+      </div>
+      <div id="notifyError" class="error-line"></div>
+    </div>
+  </section>
+
+  <section id="callPanel" class="profile-panel call-panel hidden">
+    <div class="profile-card call-card">
+      <div class="user-profile-head">
+        <h2 id="callTitle">Видеозвонок</h2>
+        <span id="callStatus">Подготовка...</span>
+      </div>
+      <div id="callDiagnostics" class="call-diagnostics"></div>
+      <div class="call-stage">
+        <div id="remoteGrid" class="remote-grid">
+          <div class="video-box" data-primary-remote="true">
+            <video id="remoteVideo" autoplay playsinline></video>
+            <div class="video-label">Собеседник</div>
+          </div>
+        </div>
+        <div class="video-box local">
+          <video id="localVideo" autoplay playsinline muted></video>
+          <div class="video-label">Ты</div>
+        </div>
+      </div>
+      <div class="call-actions">
+        <button id="acceptCallButton" class="primary-button hidden" type="button">Принять</button>
+        <button id="rejectCallButton" class="danger-button hidden" type="button">Отклонить</button>
+        <button id="muteCallButton" class="ghost-outline hidden" type="button">Микрофон</button>
+        <button id="cameraCallButton" class="ghost-outline hidden" type="button">Камера</button>
+        <button id="copyCallInviteButton" class="ghost-outline hidden" type="button">Пригласить</button>
+        <button id="endCallButton" class="danger-button" type="button">Завершить</button>
+      </div>
+    </div>
+  </section>
+
+  <div id="toast" class="toast hidden"></div>
+  <div id="networkBanner" class="network-banner hidden">Нет интернета. Чаты обновятся, когда сеть вернётся.</div>
+
+  <script>
+    const initialParams = new URLSearchParams(location.search);
+    const initialRoomId = initialParams.get("room") || "global";
+    const initialNotificationsOpen = initialParams.get("notifications") === "1";
+    const initialResetToken = initialParams.get("reset") || "";
+
+    const state = {
+      token: localStorage.getItem("orbit-token") || "",
+      user: null,
+      users: [],
+      rooms: [],
+      roomId: initialRoomId,
+      messages: [],
+      pins: [],
+      activeTab: "chats",
+      eventSource: null,
+      search: "",
+      searchUsers: [],
+      searchLoading: false,
+      searchTimer: 0,
+      messageSearch: "",
+      selectedAttachment: null,
+      editingMessageId: "",
+      replyToMessageId: "",
+      mediaItems: [],
+      avatarDraft: null,
+      removeAvatar: false,
+      viewUser: null,
+      groupDraftIds: new Set(),
+      call: null,
+      pendingOffer: null,
+      pendingIce: [],
+      typing: {},
+      typingTimer: 0,
+      mediaRecorder: null,
+      recordChunks: [],
+      recordStream: null,
+      recordStopTimer: 0,
+      notificationsReady: false,
+      pushStatus: null,
+      deferredInstallPrompt: null,
+      resetToken: initialResetToken,
+      initialNotificationsOpen
+    };
+
+    const $ = (id) => document.getElementById(id);
+    document.querySelectorAll("button[title]:not([aria-label])").forEach((button) => {
+      button.setAttribute("aria-label", button.title);
+    });
+
+    const els = {
+      authView: $("authView"),
+      appView: $("appView"),
+      loginTab: $("loginTab"),
+      registerTab: $("registerTab"),
+      loginForm: $("loginForm"),
+      registerForm: $("registerForm"),
+      forgotPasswordButton: $("forgotPasswordButton"),
+      resetRequestForm: $("resetRequestForm"),
+      resetFinishForm: $("resetFinishForm"),
+      resetEmail: $("resetEmail"),
+      resetPassword: $("resetPassword"),
+      backToLoginButton: $("backToLoginButton"),
+      cancelResetButton: $("cancelResetButton"),
+      authError: $("authError"),
+      listView: $("listView"),
+      chatsTab: $("chatsTab"),
+      contactsTab: $("contactsTab"),
+      notifyButton: $("notifyButton"),
+      newGroupButton: $("newGroupButton"),
+      searchInput: $("searchInput"),
+      onlineCount: $("onlineCount"),
+      meAvatar: $("meAvatar"),
+      meName: $("meName"),
+      roomAvatar: $("roomAvatar"),
+      roomName: $("roomName"),
+      roomSub: $("roomSub"),
+      messageSearch: $("messageSearch"),
+      clearMessageSearch: $("clearMessageSearch"),
+      pinStrip: $("pinStrip"),
+      typingLine: $("typingLine"),
+      messagesView: $("messagesView"),
+      composer: $("composer"),
+      messageInput: $("messageInput"),
+      fileInput: $("fileInput"),
+      replyBar: $("replyBar"),
+      attachButton: $("attachButton"),
+      voiceButton: $("voiceButton"),
+      attachmentPreview: $("attachmentPreview"),
+      editBar: $("editBar"),
+      cancelEditButton: $("cancelEditButton"),
+      logoutButton: $("logoutButton"),
+      securityButton: $("securityButton"),
+      securityPanel: $("securityPanel"),
+      securityStatus: $("securityStatus"),
+      revokeSessionsButton: $("revokeSessionsButton"),
+      closeSecurityPanel: $("closeSecurityPanel"),
+      securityError: $("securityError"),
+      profileButton: $("profileButton"),
+      profilePanel: $("profilePanel"),
+      profileForm: $("profileForm"),
+      profileNickname: $("profileNickname"),
+      profileEmail: $("profileEmail"),
+      profileEmailStatus: $("profileEmailStatus"),
+      sendVerificationButton: $("sendVerificationButton"),
+      profileBio: $("profileBio"),
+      profileAvatarPreview: $("profileAvatarPreview"),
+      avatarButton: $("avatarButton"),
+      removeAvatarButton: $("removeAvatarButton"),
+      avatarInput: $("avatarInput"),
+      profileError: $("profileError"),
+      closeProfile: $("closeProfile"),
+      userProfilePanel: $("userProfilePanel"),
+      viewProfileAvatar: $("viewProfileAvatar"),
+      viewProfileName: $("viewProfileName"),
+      viewProfileStatus: $("viewProfileStatus"),
+      viewProfileBio: $("viewProfileBio"),
+      viewProfileChat: $("viewProfileChat"),
+      viewProfileContact: $("viewProfileContact"),
+      viewProfileBlock: $("viewProfileBlock"),
+      viewProfileReport: $("viewProfileReport"),
+      closeUserProfile: $("closeUserProfile"),
+      groupPanel: $("groupPanel"),
+      groupForm: $("groupForm"),
+      groupName: $("groupName"),
+      groupMembers: $("groupMembers"),
+      groupError: $("groupError"),
+      closeGroupPanel: $("closeGroupPanel"),
+      roomInfoButton: $("roomInfoButton"),
+      mediaButton: $("mediaButton"),
+      roomPanel: $("roomPanel"),
+      roomPanelTitle: $("roomPanelTitle"),
+      roomPanelSub: $("roomPanelSub"),
+      roomSettings: $("roomSettings"),
+      roomMembers: $("roomMembers"),
+      leaveGroupButton: $("leaveGroupButton"),
+      closeRoomPanel: $("closeRoomPanel"),
+      roomError: $("roomError"),
+      mediaPanel: $("mediaPanel"),
+      mediaPanelSub: $("mediaPanelSub"),
+      mediaItems: $("mediaItems"),
+      closeMediaPanel: $("closeMediaPanel"),
+      mediaError: $("mediaError"),
+      notifyPanel: $("notifyPanel"),
+      notifyStatus: $("notifyStatus"),
+      enableNotifyButton: $("enableNotifyButton"),
+      installAppButton: $("installAppButton"),
+      testNotifyButton: $("testNotifyButton"),
+      copyAppLinkButton: $("copyAppLinkButton"),
+      closeNotifyPanel: $("closeNotifyPanel"),
+      notifyError: $("notifyError"),
+      backButton: $("backButton"),
+      audioCallButton: $("audioCallButton"),
+      callButton: $("callButton"),
+      copyRoomLinkButton: $("copyRoomLinkButton"),
+      refreshButton: $("refreshButton"),
+      callPanel: $("callPanel"),
+      callTitle: $("callTitle"),
+      callStatus: $("callStatus"),
+      callDiagnostics: $("callDiagnostics"),
+      remoteGrid: $("remoteGrid"),
+      remoteVideo: $("remoteVideo"),
+      localVideo: $("localVideo"),
+      acceptCallButton: $("acceptCallButton"),
+      rejectCallButton: $("rejectCallButton"),
+      muteCallButton: $("muteCallButton"),
+      cameraCallButton: $("cameraCallButton"),
+      copyCallInviteButton: $("copyCallInviteButton"),
+      endCallButton: $("endCallButton"),
+      toast: $("toast"),
+      networkBanner: $("networkBanner")
+    };
+
+    function escapeHtml(value) {
+      return String(value ?? "").replace(/[&<>"']/g, (char) => ({
+        "&": "&amp;",
+        "<": "&lt;",
+        ">": "&gt;",
+        "\"": "&quot;",
+        "'": "&#039;"
+      }[char]));
+    }
+
+    function initials(name) {
+      return String(name || "?").trim().slice(0, 2).toUpperCase();
+    }
+
+    const MAX_CLIENT_FILE_BYTES = 25 * 1024 * 1024;
+    const MAX_CLIENT_AVATAR_BYTES = 8 * 1024 * 1024;
+    const REACTION_CHOICES = ["👍", "❤️", "😂", "🔥", "😮", "😢"];
+
+    function formatBytes(bytes) {
+      if (!bytes) return "0 Б";
+      if (bytes < 1024) return `${bytes} Б`;
+      if (bytes < 1024 * 1024) return `${Math.round(bytes / 1024)} КБ`;
+      return `${(bytes / 1024 / 1024).toFixed(1)} МБ`;
+    }
+
+    function formatDateTime(value) {
+      if (!value) return "неизвестно";
+      return new Date(value).toLocaleString("ru-RU", {
+        day: "2-digit",
+        month: "2-digit",
+        hour: "2-digit",
+        minute: "2-digit"
+      });
+    }
+
+    function avatarInner(user, fallback = "?") {
+      if (user?.avatarUrl) return `<img src="${escapeHtml(user.avatarUrl)}" alt="">`;
+      return escapeHtml(initials(user?.nickname || fallback));
+    }
+
+    function avatarHtml(user, options = {}) {
+      const classes = ["avatar", options.small ? "small" : ""].filter(Boolean).join(" ");
+      const fallback = options.fallback || user?.nickname || "?";
+      const dot = options.dot ? `<span class="dot ${user?.status === "online" ? "online" : ""}"></span>` : "";
+      return `<div class="${classes}" style="background:${escapeHtml(user?.avatarColor || options.color || "#46d9ff")}">${avatarInner(user, fallback)}${dot}</div>`;
+    }
+
+    function setAvatarElement(element, user, fallback = "?") {
+      element.style.background = user?.avatarColor || "#46d9ff";
+      element.innerHTML = avatarInner(user, fallback);
+    }
+
+    function fileExt(name) {
+      const ext = String(name || "").split(".").pop();
+      return ext && ext.length <= 5 ? ext.toUpperCase() : "FILE";
+    }
+
+    function normalizeMimeType(mimeType, fallback = "application/octet-stream") {
+      return String(mimeType || fallback).split(";")[0].trim().toLowerCase() || fallback;
+    }
+
+    function audioExtension(mimeType) {
+      const normalized = normalizeMimeType(mimeType, "audio/webm");
+      if (normalized.includes("mp4") || normalized.includes("m4a")) return "m4a";
+      if (normalized.includes("aac")) return "aac";
+      if (normalized.includes("ogg")) return "ogg";
+      if (normalized.includes("wav") || normalized.includes("wave")) return "wav";
+      if (normalized.includes("mpeg") || normalized.includes("mp3")) return "mp3";
+      return "webm";
+    }
+
+    function supportedRecorderMime() {
+      if (!window.MediaRecorder?.isTypeSupported) return "";
+      return [
+        "audio/webm;codecs=opus",
+        "audio/webm",
+        "audio/ogg;codecs=opus",
+        "audio/ogg",
+        "audio/mp4",
+        "audio/aac"
+      ].find((type) => MediaRecorder.isTypeSupported(type)) || "";
+    }
+
+    function readFileAsData(file, maxBytes) {
+      return new Promise((resolve, reject) => {
+        if (!file) return reject(new Error("Файл не выбран."));
+        if (file.size > maxBytes) return reject(new Error(`Файл слишком большой. Максимум ${formatBytes(maxBytes)}.`));
+        const reader = new FileReader();
+        reader.onload = () => resolve({
+          name: file.name,
+          mimeType: normalizeMimeType(file.type),
+          size: file.size,
+          data: reader.result
+        });
+        reader.onerror = () => reject(new Error("Не получилось прочитать файл."));
+        reader.readAsDataURL(file);
+      });
+    }
+
+    function readBlobAsData(blob, name) {
+      return new Promise((resolve, reject) => {
+        if (!blob || !blob.size) return reject(new Error("Запись пустая."));
+        if (blob.size > MAX_CLIENT_FILE_BYTES) return reject(new Error(`Файл слишком большой. Максимум ${formatBytes(MAX_CLIENT_FILE_BYTES)}.`));
+        const mimeType = normalizeMimeType(blob.type, "audio/webm");
+        const reader = new FileReader();
+        reader.onload = () => resolve({
+          name,
+          mimeType,
+          size: blob.size,
+          data: reader.result
+        });
+        reader.onerror = () => reject(new Error("Не получилось прочитать запись."));
+        reader.readAsDataURL(blob);
+      });
+    }
+
+    function renderAttachmentPreview() {
+      const attachment = state.selectedAttachment;
+      if (!attachment) {
+        els.attachmentPreview.classList.add("hidden");
+        els.attachmentPreview.innerHTML = "";
+        return;
+      }
+      const isImage = attachment.mimeType.startsWith("image/");
+      const isAudio = attachment.mimeType.startsWith("audio/");
+      els.attachmentPreview.classList.remove("hidden");
+      els.attachmentPreview.innerHTML = `
+        ${isImage ? `<img src="${escapeHtml(attachment.data)}" alt="">` : (isAudio ? `<div class="file-icon">🎙</div>` : `<div class="file-icon">${escapeHtml(fileExt(attachment.name))}</div>`)}
+        <div class="${isAudio ? "voice-preview" : ""}">
+          <strong>${escapeHtml(attachment.name)}</strong>
+          ${isAudio ? `<audio controls preload="metadata" src="${escapeHtml(attachment.data)}"></audio>` : ""}
+          <span>${escapeHtml(formatBytes(attachment.size))}</span>
+        </div>
+        <button id="clearAttachment" class="icon-button" title="Убрать файл" type="button">
+          <svg viewBox="0 0 24 24" fill="none"><path d="M18 6 6 18" stroke="currentColor"/><path d="m6 6 12 12" stroke="currentColor"/></svg>
+        </button>
+      `;
+      $("clearAttachment").addEventListener("click", clearAttachment);
+    }
+
+    function clearAttachment() {
+      state.selectedAttachment = null;
+      els.fileInput.value = "";
+      renderAttachmentPreview();
+    }
+
+    function renderAttachment(attachment) {
+      if (!attachment) return "";
+      if (attachment.kind === "image" || String(attachment.mimeType || "").startsWith("image/")) {
+        return `<a class="attachment-image" href="${escapeHtml(attachment.url)}" target="_blank" rel="noreferrer"><img src="${escapeHtml(attachment.url)}" alt="${escapeHtml(attachment.name || "image")}"></a>`;
+      }
+      if (attachment.kind === "audio" || String(attachment.mimeType || "").startsWith("audio/")) {
+        return `<div class="attachment-audio"><audio src="${escapeHtml(attachment.url)}" controls preload="metadata"></audio></div>`;
+      }
+      return `
+        <a class="attachment-file" href="${escapeHtml(attachment.url)}" download="${escapeHtml(attachment.name || "file")}">
+          <div class="file-icon">${escapeHtml(fileExt(attachment.name))}</div>
+          <div>
+            <strong>${escapeHtml(attachment.name || "Файл")}</strong>
+            <span>${escapeHtml(formatBytes(attachment.size))}</span>
+          </div>
+        </a>
+      `;
+    }
+
+    function renderAttachmentStack(message) {
+      const attachments = message.attachments || [];
+      if (!attachments.length) return "";
+      return `<div class="attachment-stack">${attachments.map(renderAttachment).join("")}</div>`;
+    }
+
+    function replyLabel(message) {
+      if (!message) return "";
+      const first = message.attachments?.[0];
+      return message.text || (first ? (first.kind === "image" ? "Фото" : first.name || "Файл") : "Сообщение");
+    }
+
+    function renderReplyBar() {
+      const message = state.messages.find((item) => item.id === state.replyToMessageId && !item.deletedAt);
+      if (!message) {
+        state.replyToMessageId = "";
+        els.replyBar.classList.add("hidden");
+        els.replyBar.innerHTML = "";
+        return;
+      }
+      els.replyBar.innerHTML = `
+        <div>
+          <strong>Ответ: ${escapeHtml(message.senderId === state.user?.id ? "ты" : message.sender?.nickname || "?")}</strong>
+          <span>${escapeHtml(replyLabel(message))}</span>
+        </div>
+        <button type="button" data-cancel-reply>Отмена</button>
+      `;
+      els.replyBar.classList.remove("hidden");
+      els.replyBar.querySelector("[data-cancel-reply]")?.addEventListener("click", cancelReply);
+    }
+
+    function renderReplyPreview(message) {
+      const reply = message.replyTo;
+      if (!reply || message.deletedAt) return "";
+      const text = reply.text || reply.attachmentName || (reply.attachmentKind === "image" ? "Фото" : "Сообщение");
+      return `
+        <div class="reply-preview" data-jump="${escapeHtml(reply.id)}">
+          <strong>${escapeHtml(reply.senderName || "?")}</strong>
+          <span>${escapeHtml(text)}</span>
+        </div>
+      `;
+    }
+
+    function lastMessageSubtitle(room) {
+      const message = room.lastMessage;
+      if (!message) return room.id === "global" ? "Здесь видят все" : (room.type === "group" ? (room.subtitle || "Группа") : seenLabel(room.user));
+      if (message.deletedAt) return `${message.sender?.nickname || "?"}: сообщение удалено`;
+      if (message.text) return `${message.sender?.nickname || "?"}: ${message.text}`;
+      const first = message.attachments?.[0];
+      const label = first?.kind === "image" ? "Фото" : (first?.kind === "audio" ? "Голосовое" : first?.name || "Файл");
+      return `${message.sender?.nickname || "?"}: ${label}`;
+    }
+
+    function messageSnippet(message) {
+      if (!message) return "";
+      if (message.deletedAt) return "Сообщение удалено";
+      if (message.text) return message.text;
+      const first = message.attachments?.[0];
+      if (!first) return "Сообщение";
+      if (first.kind === "image") return "Фото";
+      if (first.kind === "audio") return "Голосовое сообщение";
+      return first.name || "Файл";
+    }
+
+    function renderPins() {
+      const pins = state.pins || [];
+      els.pinStrip.classList.toggle("hidden", !pins.length);
+      if (!pins.length) {
+        els.pinStrip.innerHTML = "";
+        return;
+      }
+      els.pinStrip.innerHTML = pins.map((message) => `
+        <button class="pin-pill" type="button" data-jump-message="${escapeHtml(message.id)}">📌 ${escapeHtml(messageSnippet(message))}</button>
+      `).join("");
+      els.pinStrip.querySelectorAll("[data-jump-message]").forEach((button) => {
+        button.addEventListener("click", () => jumpToMessage(button.dataset.jumpMessage));
+      });
+    }
+
+    function timeLabel(ms) {
+      if (!ms) return "";
+      const date = new Date(ms);
+      return date.toLocaleTimeString("ru-RU", { hour: "2-digit", minute: "2-digit" });
+    }
+
+    function seenLabel(user) {
+      if (!user) return "";
+      if (user.status === "online") return "онлайн";
+      if (!user.lastSeen) return "не в сети";
+      const diff = Date.now() - user.lastSeen;
+      if (diff < 120000) return "только что был";
+      if (diff < 3600000) return `${Math.floor(diff / 60000)} мин назад`;
+      return new Date(user.lastSeen).toLocaleDateString("ru-RU");
+    }
+
+    function showToast(text) {
+      els.toast.textContent = text;
+      els.toast.classList.remove("hidden");
+      clearTimeout(showToast.timer);
+      showToast.timer = setTimeout(() => els.toast.classList.add("hidden"), 2600);
+    }
+
+    function updateNetworkBanner() {
+      const offline = navigator.onLine === false;
+      els.networkBanner.classList.toggle("hidden", !offline);
+    }
+
+    function unreadTotal() {
+      return mergeGlobalRoom(state.rooms).reduce((sum, room) => sum + Number(room.unreadCount || 0), 0);
+    }
+
+    function updateAppBadge() {
+      const total = unreadTotal();
+      document.title = total ? `(${total > 99 ? "99+" : total}) Orbit Chat` : "Orbit Chat";
+      if (!("setAppBadge" in navigator) && !("clearAppBadge" in navigator)) return;
+      try {
+        if (total > 0) navigator.setAppBadge(total).catch(() => {});
+        else navigator.clearAppBadge?.().catch(() => {});
+      } catch {}
+    }
+
+    async function api(path, options = {}) {
+      const headers = { ...(options.headers || {}) };
+      if (state.token) headers.authorization = `Bearer ${state.token}`;
+      if (options.body && typeof options.body !== "string") {
+        headers["content-type"] = "application/json";
+        options.body = JSON.stringify(options.body);
+      }
+      const response = await fetch(path, { ...options, headers });
+      const data = await response.json().catch(() => ({ ok: false, error: "Сервер не ответил JSON." }));
+      if (!response.ok || data.ok === false) throw new Error(data.error || "Ошибка запроса.");
+      return data;
+    }
+
+    function urlBase64ToUint8Array(base64String) {
+      const padding = "=".repeat((4 - base64String.length % 4) % 4);
+      const base64 = (base64String + padding).replace(/-/g, "+").replace(/_/g, "/");
+      const rawData = atob(base64);
+      const outputArray = new Uint8Array(rawData.length);
+      for (let index = 0; index < rawData.length; index += 1) outputArray[index] = rawData.charCodeAt(index);
+      return outputArray;
+    }
+
+    function updateNotificationButton() {
+      if (!els.notifyButton) return;
+      const supported = "Notification" in window;
+      const granted = supported && Notification.permission === "granted";
+      state.notificationsReady = granted;
+      els.notifyButton.classList.toggle("active", granted);
+      els.notifyButton.title = supported
+        ? (granted ? "Уведомления включены" : "Включить уведомления")
+        : "Уведомления не поддерживаются";
+    }
+
+    function isStandaloneApp() {
+      return window.matchMedia?.("(display-mode: standalone)")?.matches || window.navigator.standalone === true;
+    }
+
+    function notifyRow(kind, title, text) {
+      return `
+        <div class="notify-row ${kind}">
+          <span class="notify-dot"></span>
+          <div><strong>${escapeHtml(title)}</strong>${escapeHtml(text)}</div>
+        </div>
+      `;
+    }
+
+    function renderNotifyStatus() {
+      if (!els.notifyStatus) return;
+      const browserSupported = "Notification" in window && "serviceWorker" in navigator && "PushManager" in window;
+      const permission = "Notification" in window ? Notification.permission : "unsupported";
+      const push = state.pushStatus || {};
+      const secure = location.protocol === "https:" || ["localhost", "127.0.0.1"].includes(location.hostname);
+      const standalone = isStandaloneApp();
+      const subscriptionCount = Number(push.subscriptionCount || 0);
+      const rows = [
+        notifyRow(browserSupported ? "ok" : "warn", "Браузер", browserSupported ? "Push API и service worker доступны." : "Этот браузер не дал полный Web Push. На iPhone используй Safari и добавление на главный экран."),
+        notifyRow(secure ? "ok" : "warn", "Безопасная ссылка", secure ? "Ссылка подходит для push, камеры и микрофона." : "Для телефона нужна HTTPS-ссылка Render, обычный http не подойдёт."),
+        notifyRow(permission === "granted" ? "ok" : (permission === "denied" ? "" : "warn"), "Разрешение телефона", permission === "granted" ? "Телефон разрешил уведомления." : (permission === "denied" ? "Уведомления заблокированы в настройках браузера/телефона." : "Нужно нажать “Включить” и разрешить уведомления.")),
+        notifyRow(push.enabled ? "ok" : "warn", "Сервер push", push.enabled ? "Сервер готов отправлять настоящие push-уведомления." : "На сервере ещё не готов web-push. После загрузки на Render он установится через npm install."),
+        notifyRow(subscriptionCount > 0 ? "ok" : "warn", "Это устройство", subscriptionCount > 0 ? `Подписок на сервере: ${subscriptionCount}.` : "Подписки ещё нет. Нажми “Включить”."),
+        notifyRow(standalone ? "ok" : "warn", "Режим приложения", standalone ? "Открыто как установленное приложение." : "Для экрана блокировки на iPhone добавь сайт на главный экран и открой через иконку.")
+      ];
+      els.notifyStatus.innerHTML = rows.join("");
+      updateInstallButton();
+    }
+
+    function updateInstallButton() {
+      if (!els.installAppButton) return;
+      const installed = isStandaloneApp();
+      els.installAppButton.disabled = installed || !state.deferredInstallPrompt;
+      els.installAppButton.textContent = installed ? "Установлено" : "Установить";
+      els.installAppButton.title = state.deferredInstallPrompt
+        ? "Установить приложение на устройство"
+        : "Если кнопка неактивна: на iPhone добавь сайт через меню Safari";
+    }
+
+    async function refreshPushStatus() {
+      if (!state.user) return;
+      try {
+        state.pushStatus = await api("/api/push-status");
+      } catch {
+        state.pushStatus = { enabled: false, subscriptionCount: 0 };
+      }
+      updateNotificationButton();
+      renderNotifyStatus();
+    }
+
+    async function openNotifyPanel() {
+      els.notifyError.textContent = "";
+      els.notifyPanel.classList.remove("hidden");
+      renderNotifyStatus();
+      await refreshPushStatus();
+    }
+
+    function closeNotifyPanel() {
+      els.notifyPanel.classList.add("hidden");
+      els.notifyError.textContent = "";
+    }
+
+    async function installApp() {
+      if (!state.deferredInstallPrompt) {
+        showToast("На iPhone: Safari → Поделиться → На экран Домой.");
+        return;
+      }
+      const promptEvent = state.deferredInstallPrompt;
+      state.deferredInstallPrompt = null;
+      promptEvent.prompt();
+      await promptEvent.userChoice.catch(() => {});
+      updateInstallButton();
+      renderNotifyStatus();
+    }
+
+    async function subscribePush() {
+      if (!state.user || !("serviceWorker" in navigator) || !("PushManager" in window)) return false;
+      const keyData = await api("/api/push-key");
+      if (!keyData.enabled || !keyData.publicKey) return false;
+      const registration = await navigator.serviceWorker.ready;
+      let subscription = await registration.pushManager.getSubscription();
+      if (!subscription) {
+        subscription = await registration.pushManager.subscribe({
+          userVisibleOnly: true,
+          applicationServerKey: urlBase64ToUint8Array(keyData.publicKey)
+        });
+      }
+      await api("/api/push-subscriptions", {
+        method: "POST",
+        body: { subscription: subscription.toJSON() }
+      });
+      return true;
+    }
+
+    async function unsubscribePushCurrentDevice() {
+      if (!state.user || !("serviceWorker" in navigator) || !("PushManager" in window)) return;
+      const registration = await navigator.serviceWorker.ready;
+      const subscription = await registration.pushManager.getSubscription();
+      if (!subscription) return;
+      await api("/api/push-unsubscribe", {
+        method: "POST",
+        body: { endpoint: subscription.endpoint }
+      }).catch(() => {});
+      await subscription.unsubscribe().catch(() => {});
+      state.pushStatus = null;
+      updateNotificationButton();
+    }
+
+    async function setupNotifications() {
+      if (!("Notification" in window)) {
+        updateNotificationButton();
+        return;
+      }
+      if ("serviceWorker" in navigator) {
+        try {
+          await navigator.serviceWorker.register("/sw.js");
+        } catch {}
+      }
+      updateNotificationButton();
+      if (Notification.permission === "granted") {
+        try {
+          await subscribePush();
+        } catch {}
+      }
+      await refreshPushStatus();
+    }
+
+    async function requestNotifications() {
+      els.notifyError.textContent = "";
+      if (!("Notification" in window)) {
+        showToast("Этот браузер не поддерживает уведомления.");
+        renderNotifyStatus();
+        return;
+      }
+      const permission = await Notification.requestPermission();
+      updateNotificationButton();
+      if (permission !== "granted") {
+        showToast("Уведомления не включены.");
+        renderNotifyStatus();
+        return;
+      }
+      let pushEnabled = false;
+      try {
+        pushEnabled = await subscribePush();
+      } catch (error) {
+        els.notifyError.textContent = error.message;
+      }
+      await refreshPushStatus();
+      updateNotificationButton();
+      showToast(pushEnabled ? "Уведомления включены на этом устройстве." : "Разрешение есть, но серверная push-подписка ещё не готова.");
+    }
+
+    async function sendTestNotification() {
+      els.notifyError.textContent = "";
+      try {
+        if ("Notification" in window && Notification.permission !== "granted") {
+          await requestNotifications();
+        }
+        await subscribePush();
+        const result = await api("/api/push-test", { method: "POST" });
+        await refreshPushStatus();
+        showToast(`Тест отправлен: ${result.sent || 0}/${result.attempted || 0}.`);
+      } catch (error) {
+        const localShown = await showLocalTestNotification().catch(() => false);
+        els.notifyError.textContent = localShown
+          ? `${error.message} Показан локальный тест, но для экрана блокировки друга нужен Render push.`
+          : error.message;
+        showToast(localShown ? "Показан локальный тест уведомления." : error.message);
+        await refreshPushStatus();
+      }
+    }
+
+    async function showLocalTestNotification() {
+      if (!("Notification" in window) || Notification.permission !== "granted") return false;
+      const options = {
+        body: "Локальная проверка уведомлений на этом устройстве.",
+        tag: "orbit-local-test",
+        icon: "/icon-192.png",
+        badge: "/maskable-icon-512.png",
+        data: { url: location.href }
+      };
+      if ("serviceWorker" in navigator) {
+        const registration = await navigator.serviceWorker.ready;
+        await registration.showNotification("Orbit Chat", options);
+        return true;
+      }
+      new Notification("Orbit Chat", options);
+      return true;
+    }
+
+    async function showMessageNotification(message) {
+      if (!message || message.senderId === state.user?.id) return;
+      if (!("Notification" in window) || Notification.permission !== "granted") return;
+      if (document.visibilityState === "visible") return;
+      const room = findRoom(message.roomId);
+      const title = room?.type === "group" ? room.title : (message.sender?.nickname || "Новое сообщение");
+      const first = message.attachments?.[0];
+      const body = message.text || (first ? (first.kind === "image" ? "Фото" : first.name || "Файл") : "Новое сообщение");
+      const options = {
+        body,
+        tag: message.id,
+        data: { url: `${location.origin}/?room=${encodeURIComponent(message.roomId)}` },
+        icon: message.sender?.avatarUrl || "/icon-192.png",
+        badge: "/maskable-icon-512.png"
+      };
+      if ("serviceWorker" in navigator) {
+        try {
+          const registration = await navigator.serviceWorker.ready;
+          await registration.showNotification(title, options);
+          return;
+        } catch {}
+      }
+      new Notification(title, options);
+    }
+
+    function setAuthMode(mode) {
+      const login = mode === "login";
+      const register = mode === "register";
+      const resetRequest = mode === "reset-request";
+      const resetFinish = mode === "reset-finish";
+      els.loginTab.classList.toggle("active", login);
+      els.registerTab.classList.toggle("active", register);
+      els.loginForm.classList.toggle("hidden", !login);
+      els.registerForm.classList.toggle("hidden", !register);
+      els.resetRequestForm.classList.toggle("hidden", !resetRequest);
+      els.resetFinishForm.classList.toggle("hidden", !resetFinish);
+      els.authError.textContent = "";
+    }
+
+    function showAuthResult(result, fallback) {
+      const lines = [fallback].filter(Boolean);
+      if (result?.sent) lines.push("Письмо отправлено.");
+      if (result?.needsMailSetup) lines.push("На Render нужно настроить SMTP или RESEND_API_KEY.");
+      if (result?.devLink) lines.push(`<a href="${escapeHtml(result.devLink)}" target="_blank" rel="noreferrer">Открыть dev-ссылку</a>`);
+      if (result?.error) lines.push(escapeHtml(result.error));
+      els.authError.innerHTML = lines.join("<br>");
+    }
+
+    function saveSession(token) {
+      state.token = "";
+      localStorage.removeItem("orbit-token");
+    }
+
+    function clearSession() {
+      state.token = "";
+      state.user = null;
+      if (state.mediaRecorder?.state === "recording") state.mediaRecorder.stop();
+      state.recordStream?.getTracks?.().forEach((track) => track.stop());
+      localStorage.removeItem("orbit-token");
+      stopEvents();
+    }
+
+    function setSignedIn(payload) {
+      state.user = payload.user;
+      state.users = applyContactFlags(payload.users || state.users || []);
+      state.rooms = payload.rooms || [{ id: "global", type: "global", title: "Общий чат" }];
+      els.authView.classList.add("hidden");
+      els.appView.classList.remove("hidden");
+      renderShell();
+      startEvents();
+      setupNotifications().catch(() => {});
+      openRoom(state.roomId || "global", true).then(() => {
+        if (state.initialNotificationsOpen) {
+          state.initialNotificationsOpen = false;
+          openNotifyPanel().catch(() => {});
+        }
+      });
+    }
+
+    function renderShell() {
+      if (!state.user) return;
+      setAvatarElement(els.meAvatar, state.user, "Я");
+      els.meName.textContent = state.user.nickname;
+      const online = state.users.filter((user) => user.status === "online").length + 1;
+      els.onlineCount.textContent = `${online} онлайн`;
+      renderList();
+      updateAppBadge();
+      renderRoomHeader();
+      const callable = ["direct", "group"].includes(findRoom(state.roomId)?.type);
+      els.audioCallButton.classList.toggle("hidden", !callable);
+      els.callButton.classList.toggle("hidden", !callable);
+      updateNotificationButton();
+      if (!els.userProfilePanel.classList.contains("hidden")) renderUserProfile();
+      if (!els.profilePanel.classList.contains("hidden")) renderProfileEmailStatus();
+    }
+
+    function renderList() {
+      const searchingPeople = Boolean(state.search.trim());
+      els.chatsTab.classList.toggle("active", state.activeTab === "chats");
+      els.contactsTab.classList.toggle("active", state.activeTab === "contacts" && !searchingPeople);
+      if (searchingPeople) {
+        renderPeople(false);
+      } else if (state.activeTab === "contacts") {
+        renderPeople(true);
+      } else {
+        renderChats();
+      }
+    }
+
+    function renderChats() {
+      const rooms = mergeGlobalRoom(state.rooms);
+      els.listView.innerHTML = rooms.map((room) => {
+        const isGlobal = room.id === "global";
+        const isGroup = room.type === "group";
+        const title = isGlobal ? "Общий чат" : room.title;
+        const subtitle = lastMessageSubtitle(room);
+        const unread = Number(room.unreadCount || 0);
+        const rowLabel = unread ? `${title}, непрочитанных: ${unread}` : title;
+        const avatarUser = isGlobal
+          ? { nickname: "О", avatarColor: "#46d9ff" }
+          : isGroup
+            ? { nickname: title, avatarColor: "#ffcc66" }
+            : room.user;
+        return `
+          <button class="chat-row ${room.id === state.roomId ? "active" : ""}" type="button" data-room="${escapeHtml(room.id)}" aria-label="${escapeHtml(rowLabel)}">
+            ${avatarHtml(avatarUser, { fallback: isGlobal ? "О" : title, color: isGroup ? "#ffcc66" : (isGlobal ? "#46d9ff" : "#9eff8f"), dot: !isGlobal && !isGroup })}
+            <div class="row-main">
+              <strong>${escapeHtml(title)}</strong>
+              <span>${escapeHtml(subtitle || "")}</span>
+            </div>
+            <div class="row-meta">
+              <span>${room.lastMessage ? timeLabel(room.lastMessage.createdAt) : ""}</span>
+              ${unread ? `<span class="unread-badge">${unread > 99 ? "99+" : unread}</span>` : ""}
+            </div>
+          </button>
+        `;
+      }).join("");
+      els.listView.querySelectorAll("[data-room]").forEach((button) => {
+        button.addEventListener("click", () => openRoom(button.dataset.room));
+      });
+    }
+
+    function renderPeople(onlyContacts = false) {
+      const q = state.search.trim().toLowerCase();
+      if (!onlyContacts && q.length < 2) {
+        els.listView.innerHTML = `<div class="empty-state"><strong>Поиск людей</strong>Введи минимум 2 символа ника или точную почту.</div>`;
+        return;
+      }
+      if (!onlyContacts && state.searchLoading) {
+        els.listView.innerHTML = `<div class="empty-state"><strong>Ищем...</strong>Проверяем пользователей на сервере.</div>`;
+        return;
+      }
+      const sourceUsers = onlyContacts ? state.users : state.searchUsers;
+      const users = sourceUsers
+        .filter((user) => user.id !== state.user?.id)
+        .filter((user) => !onlyContacts || user.isContact)
+        .filter((user) => onlyContacts || !q || user.nickname.toLowerCase().includes(q) || String(user.email || "").toLowerCase() === q)
+        .sort((a, b) => Number(b.isContact) - Number(a.isContact) || a.nickname.localeCompare(b.nickname, "ru"));
+      if (!users.length) {
+        els.listView.innerHTML = `<div class="empty-state"><strong>${onlyContacts ? "Контактов пока нет" : "Никого не нашли"}</strong>${onlyContacts ? "Найди человека через поиск и нажми +, чтобы сохранить его здесь." : "Проверь ник или введи точную почту аккаунта."}</div>`;
+        return;
+      }
+      els.listView.innerHTML = users.map((user) => `
+        <div class="person-row ${user.isContact ? "saved" : ""}">
+            ${avatarHtml(user, { dot: true })}
+            <div class="row-main">
+              <strong>${escapeHtml(user.nickname)}</strong>
+              <span>${escapeHtml(user.isBlocked ? "Заблокирован" : (user.isContact ? `Контакт · ${user.bio || seenLabel(user)}` : (user.bio || seenLabel(user))))}</span>
+            </div>
+            <div class="row-actions">
+            <button class="mini-action" type="button" data-user="${escapeHtml(user.id)}" ${user.isBlocked ? "disabled" : ""}>Чат</button>
+            <button class="mini-action" type="button" data-profile="${escapeHtml(user.id)}">Проф</button>
+            <button class="mini-action ${user.isContact ? "saved" : ""}" type="button" data-contact="${escapeHtml(user.id)}" ${user.isBlocked ? "disabled" : ""}>${user.isContact ? "✓" : "+"}</button>
+          </div>
+        </div>
+      `).join("");
+      els.listView.querySelectorAll("[data-user]").forEach((button) => {
+        button.addEventListener("click", () => openDirect(button.dataset.user));
+      });
+      els.listView.querySelectorAll("[data-profile]").forEach((button) => {
+        button.addEventListener("click", () => openUserProfile(button.dataset.profile));
+      });
+      els.listView.querySelectorAll("[data-contact]").forEach((button) => {
+        button.addEventListener("click", () => toggleContact(button.dataset.contact));
+      });
+    }
+
+    async function runPeopleSearch() {
+      const q = state.search.trim();
+      if (q.length < 2) {
+        state.searchUsers = [];
+        state.searchLoading = false;
+        renderList();
+        return;
+      }
+      state.searchLoading = true;
+      renderList();
+      try {
+        const data = await api(`/api/users?q=${encodeURIComponent(q)}`);
+        state.searchUsers = applyContactFlags(data.users || []);
+      } catch (error) {
+        state.searchUsers = [];
+        showToast(error.message);
+      } finally {
+        state.searchLoading = false;
+        renderList();
+      }
+    }
+
+    function schedulePeopleSearch() {
+      clearTimeout(state.searchTimer);
+      state.searchTimer = setTimeout(() => {
+        runPeopleSearch().catch((error) => showToast(error.message));
+      }, 250);
+    }
+
+    function mergeGlobalRoom(rooms) {
+      const list = rooms?.length ? rooms.slice() : [];
+      if (!list.some((room) => room.id === "global")) {
+        list.unshift({ id: "global", type: "global", title: "Общий чат" });
+      }
+      return list;
+    }
+
+    function findRoom(roomId) {
+      return mergeGlobalRoom(state.rooms).find((room) => room.id === roomId);
+    }
+
+    function findUser(userId) {
+      return state.users.find((user) => user.id === userId)
+        || state.searchUsers.find((user) => user.id === userId)
+        || (state.viewUser?.id === userId ? state.viewUser : null);
+    }
+
+    function renderGroupMembers() {
+      const users = state.users
+        .filter((user) => user.id !== state.user?.id)
+        .sort((a, b) => Number(b.isContact) - Number(a.isContact) || a.nickname.localeCompare(b.nickname, "ru"));
+      if (!users.length) {
+        els.groupMembers.innerHTML = `<div class="empty-state"><strong>Некого добавить</strong>Когда друзья зарегистрируются, они появятся здесь.</div>`;
+        return;
+      }
+      els.groupMembers.innerHTML = users.map((user) => `
+        <label class="member-option">
+          ${avatarHtml(user, { small: true, dot: true })}
+          <span>
+            <strong>${escapeHtml(user.nickname)}</strong>
+            <span>${escapeHtml(user.isContact ? "Контакт" : seenLabel(user))}</span>
+          </span>
+          <input type="checkbox" data-group-member="${escapeHtml(user.id)}" ${state.groupDraftIds.has(user.id) ? "checked" : ""}>
+        </label>
+      `).join("");
+      els.groupMembers.querySelectorAll("[data-group-member]").forEach((input) => {
+        input.addEventListener("change", () => {
+          if (input.checked) state.groupDraftIds.add(input.dataset.groupMember);
+          else state.groupDraftIds.delete(input.dataset.groupMember);
+        });
+      });
+    }
+
+    function openGroupPanel() {
+      state.groupDraftIds = new Set(state.users.filter((user) => user.isContact).map((user) => user.id).slice(0, 8));
+      els.groupName.value = "";
+      els.groupError.textContent = "";
+      renderGroupMembers();
+      els.groupPanel.classList.remove("hidden");
+    }
+
+    function closeGroupPanel() {
+      els.groupPanel.classList.add("hidden");
+      state.groupDraftIds.clear();
+    }
+
+    function makeCallId() {
+      return crypto.randomUUID ? crypto.randomUUID() : `call-${Date.now()}-${Math.random().toString(16).slice(2)}`;
+    }
+
+    function currentCallableRoom() {
+      const room = findRoom(state.roomId);
+      return ["direct", "group"].includes(room?.type) ? room : null;
+    }
+
+    function callTargetsForRoom(room) {
+      if (room?.type === "direct" && room.user?.id) return [room.user];
+      if (room?.type !== "group") return [];
+      return (room.group?.memberIds || [])
+        .filter((id) => id !== state.user?.id)
+        .map((id) => findUser(id) || { id, nickname: "Участник", avatarColor: "#ffcc66" });
+    }
+
+    function callRoomTitle(room) {
+      if (room?.type === "group") return room.title || "Группа";
+      return room?.user?.nickname || room?.title || "Звонок";
+    }
+
+    async function sendCallSignal(type, targetUserId, payload = {}, callId = state.call?.callId || state.pendingOffer?.callId || makeCallId()) {
+      await api("/api/calls", {
+        method: "POST",
+        body: { type, targetUserId, payload, callId }
+      });
+    }
+
+    function setCallButtons(mode) {
+      const incoming = mode === "incoming";
+      const active = mode === "active";
+      els.acceptCallButton.classList.toggle("hidden", !incoming);
+      els.rejectCallButton.classList.toggle("hidden", !incoming);
+      els.muteCallButton.classList.toggle("hidden", !active);
+      els.cameraCallButton.classList.toggle("hidden", !active);
+      els.copyCallInviteButton.classList.toggle("hidden", !active);
+      els.endCallButton.classList.toggle("hidden", false);
+    }
+
+    function showCallPanel(title, status, mode = "active", options = {}) {
+      els.callTitle.textContent = title;
+      els.callStatus.textContent = status;
+      els.muteCallButton.textContent = "Микрофон";
+      els.cameraCallButton.textContent = options.audioOnly ? "Без камеры" : "Камера";
+      setCallButtons(mode);
+      renderCallDiagnostics(null, options);
+      els.callPanel.classList.remove("hidden");
+    }
+
+    function updateDeviceButtons(stream) {
+      const hasAudio = Boolean(stream?.getAudioTracks?.().length);
+      const hasVideo = Boolean(stream?.getVideoTracks?.().length);
+      els.muteCallButton.disabled = !hasAudio;
+      els.cameraCallButton.disabled = !hasVideo;
+      if (!hasAudio) els.muteCallButton.textContent = "Нет микрофона";
+      if (!hasVideo) els.cameraCallButton.textContent = "Нет камеры";
+      els.localVideo.closest(".video-box")?.classList.toggle("audio-only", !hasVideo);
+      renderCallDiagnostics(stream, { audioOnly: !hasVideo });
+    }
+
+    function renderCallDiagnostics(stream, options = {}) {
+      if (!els.callDiagnostics) return;
+      const secure = window.isSecureContext || ["localhost", "127.0.0.1"].includes(location.hostname);
+      const hasAudio = Boolean(stream?.getAudioTracks?.().length);
+      const hasVideo = Boolean(stream?.getVideoTracks?.().length);
+      const audioOnly = Boolean(options.audioOnly);
+      const chips = [
+        { ok: secure, text: secure ? "HTTPS/localhost готов" : "Нужен HTTPS" },
+        { ok: !stream || hasAudio, text: stream ? (hasAudio ? "Микрофон включён" : "Микрофона нет") : "Микрофон будет запрошен" },
+        { ok: audioOnly || !stream || hasVideo, text: audioOnly ? "Режим: голос" : (stream ? (hasVideo ? "Камера включена" : "Камеры нет") : "Камера будет запрошена") },
+        { ok: true, text: "Сеть: STUN + очередь ICE" }
+      ];
+      els.callDiagnostics.innerHTML = chips.map((chip) => (
+        `<span class="call-chip ${chip.ok ? "ok" : "warn"}">${escapeHtml(chip.text)}</span>`
+      )).join("");
+    }
+
+    function playMediaElement(element) {
+      if (!element) return;
+      element.play?.().catch(() => {});
+    }
+
+    function mediaErrorMessage(error) {
+      if (!window.isSecureContext && location.hostname !== "localhost" && location.hostname !== "127.0.0.1") {
+        return "Камера и микрофон работают только на HTTPS-ссылке. На Render ссылка должна начинаться с https://";
+      }
+      if (error?.name === "NotAllowedError" || error?.name === "PermissionDeniedError") {
+        return "Браузер запретил камеру или микрофон. Разреши доступ в настройках сайта и открой звонок заново.";
+      }
+      if (error?.name === "NotFoundError" || error?.name === "DevicesNotFoundError") {
+        return "Браузер не нашел камеру или микрофон на этом устройстве.";
+      }
+      if (error?.name === "NotReadableError" || error?.name === "TrackStartError") {
+        return "Камера или микрофон заняты другим приложением. Закрой другое приложение и попробуй снова.";
+      }
+      return error?.message || "Не получилось включить камеру или микрофон.";
+    }
+
+    async function requestDevice(kind, constraints) {
+      try {
+        return await navigator.mediaDevices.getUserMedia(constraints);
+      } catch (error) {
+        return { error, kind };
+      }
+    }
+
+    function resetRemoteVideos() {
+      els.remoteGrid.querySelectorAll(".remote-extra").forEach((node) => node.remove());
+      const primary = els.remoteVideo.closest(".video-box");
+      primary.dataset.remoteId = "";
+      primary.querySelector(".video-label").textContent = "Собеседник";
+      els.remoteVideo.srcObject = null;
+    }
+
+    function attachRemoteStream(user, stream) {
+      const userId = user?.id || "remote";
+      const label = user?.nickname || "Собеседник";
+      const primary = els.remoteVideo.closest(".video-box");
+      if (!els.remoteVideo.srcObject || primary.dataset.remoteId === userId) {
+        primary.dataset.remoteId = userId;
+        primary.querySelector(".video-label").textContent = label;
+        els.remoteVideo.srcObject = stream;
+        playMediaElement(els.remoteVideo);
+        return;
+      }
+      let box = Array.from(els.remoteGrid.querySelectorAll(".video-box"))
+        .find((node) => node.dataset.remoteId === userId);
+      if (!box) {
+        box = document.createElement("div");
+        box.className = "video-box remote-extra";
+        box.dataset.remoteId = userId;
+        box.innerHTML = `<video autoplay playsinline></video><div class="video-label"></div>`;
+        els.remoteGrid.appendChild(box);
+      }
+      const video = box.querySelector("video");
+      video.srcObject = stream;
+      playMediaElement(video);
+      box.querySelector(".video-label").textContent = label;
+    }
+
+    function removeRemotePeer(userId) {
+      const primary = els.remoteVideo.closest(".video-box");
+      if (primary.dataset.remoteId === userId) {
+        els.remoteVideo.srcObject = null;
+        primary.dataset.remoteId = "";
+        primary.querySelector(".video-label").textContent = "Собеседник";
+        const next = els.remoteGrid.querySelector(".remote-extra");
+        if (next) {
+          primary.dataset.remoteId = next.dataset.remoteId || "";
+          primary.querySelector(".video-label").textContent = next.querySelector(".video-label")?.textContent || "Собеседник";
+          els.remoteVideo.srcObject = next.querySelector("video")?.srcObject || null;
+          next.remove();
+        }
+        return;
+      }
+      Array.from(els.remoteGrid.querySelectorAll(".remote-extra"))
+        .find((node) => node.dataset.remoteId === userId)?.remove();
+    }
+
+    async function getLocalStream(options = {}) {
+      if (!window.RTCPeerConnection) {
+        throw new Error("Этот браузер не поддерживает видеозвонки.");
+      }
+      if (!navigator.mediaDevices?.getUserMedia) {
+        throw new Error("Для видеозвонка нужен HTTPS или localhost и браузер с камерой.");
+      }
+      const audioConstraints = { echoCancellation: true, noiseSuppression: true, autoGainControl: true };
+      if (options.audioOnly) {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: audioConstraints, video: false })
+          .catch((error) => { throw new Error(mediaErrorMessage(error)); });
+        els.localVideo.srcObject = stream;
+        playMediaElement(els.localVideo);
+        updateDeviceButtons(stream);
+        return stream;
+      }
+      let stream;
+      try {
+        stream = await navigator.mediaDevices.getUserMedia({
+          video: { facingMode: "user", width: { ideal: 1280 }, height: { ideal: 720 } },
+          audio: audioConstraints
+        });
+      } catch (error) {
+        const [videoResult, audioResult] = await Promise.all([
+          requestDevice("camera", { video: { facingMode: "user" } }),
+          requestDevice("microphone", { audio: audioConstraints })
+        ]);
+        const tracks = [];
+        if (videoResult instanceof MediaStream) tracks.push(...videoResult.getVideoTracks());
+        if (audioResult instanceof MediaStream) tracks.push(...audioResult.getAudioTracks());
+        if (!tracks.length) throw new Error(mediaErrorMessage(error));
+        stream = new MediaStream(tracks);
+        const missing = [
+          videoResult instanceof MediaStream ? "" : "камера",
+          audioResult instanceof MediaStream ? "" : "микрофон"
+        ].filter(Boolean).join(" и ");
+        if (missing) showToast(`${missing} не включился. Звонок стартовал с доступным устройством.`);
+      }
+      els.localVideo.srcObject = stream;
+      playMediaElement(els.localVideo);
+      updateDeviceButtons(stream);
+      return stream;
+    }
+
+    function queueIceCandidate(event) {
+      if (!event?.payload?.candidate || !event.from?.id) return;
+      state.pendingIce.push({
+        callId: event.callId,
+        fromId: event.from.id,
+        candidate: event.payload.candidate,
+        createdAt: Date.now()
+      });
+      state.pendingIce = state.pendingIce
+        .filter((item) => Date.now() - item.createdAt < 90000)
+        .slice(-160);
+    }
+
+    async function flushQueuedIce(peerUserId) {
+      if (!state.call?.callId || !peerUserId) return;
+      const peer = state.call.peers?.get(peerUserId);
+      if (!peer?.pc?.remoteDescription) return;
+      const keep = [];
+      for (const item of state.pendingIce) {
+        if (item.callId === state.call.callId && item.fromId === peerUserId) {
+          await peer.pc.addIceCandidate(item.candidate).catch(() => {});
+        } else {
+          keep.push(item);
+        }
+      }
+      state.pendingIce = keep;
+    }
+
+    function createPeer(targetUser, callId) {
+      const targetUserId = targetUser.id || targetUser;
+      const pc = new RTCPeerConnection({
+        iceServers: [
+          { urls: ["stun:stun.l.google.com:19302", "stun:stun1.l.google.com:19302", "stun:stun2.l.google.com:19302"] }
+        ]
+      });
+      pc.onicecandidate = (event) => {
+        if (event.candidate) sendCallSignal("ice", targetUserId, { candidate: event.candidate }, callId).catch(() => {});
+      };
+      pc.ontrack = (event) => {
+        const [stream] = event.streams;
+        if (stream) attachRemoteStream(targetUser, stream);
+      };
+      pc.onconnectionstatechange = () => {
+        if (!state.call?.peers?.has(targetUserId)) return;
+        if (["failed", "disconnected", "closed"].includes(pc.connectionState)) {
+          state.call.peers.delete(targetUserId);
+          removeRemotePeer(targetUserId);
+        }
+        const connected = Array.from(state.call.peers.values()).filter((peer) => peer.pc.connectionState === "connected").length;
+        els.callStatus.textContent = connected ? `Соединено: ${connected}` : "Соединение...";
+      };
+      pc.oniceconnectionstatechange = () => {
+        if (!state.call?.peers?.has(targetUserId)) return;
+        if (pc.iceConnectionState === "checking") els.callStatus.textContent = "Пробиваем соединение...";
+        if (pc.iceConnectionState === "failed") els.callStatus.textContent = "Сеть не дала прямое соединение. Попробуй перезвонить или другую сеть.";
+      };
+      return pc;
+    }
+
+    function stopCallMedia() {
+      state.call?.localStream?.getTracks?.().forEach((track) => track.stop());
+      els.localVideo.srcObject = null;
+      els.localVideo.closest(".video-box")?.classList.remove("audio-only");
+      resetRemoteVideos();
+    }
+
+    function cleanupCall() {
+      const callId = state.call?.callId || state.pendingOffer?.callId || "";
+      state.call?.peers?.forEach((peer) => peer.pc?.close?.());
+      stopCallMedia();
+      if (callId) state.pendingIce = state.pendingIce.filter((item) => item.callId !== callId);
+      state.call = null;
+      state.pendingOffer = null;
+      els.callPanel.classList.add("hidden");
+    }
+
+    async function startOfferTo(target, localStream, callId, room) {
+      const pc = createPeer(target, callId);
+      state.call.peers.set(target.id, { user: target, pc });
+      localStream.getTracks().forEach((track) => pc.addTrack(track, localStream));
+      const offer = await pc.createOffer();
+      await pc.setLocalDescription(offer);
+      await sendCallSignal("offer", target.id, {
+        description: pc.localDescription,
+        roomId: room.id,
+        roomTitle: callRoomTitle(room),
+        isGroup: room.type === "group",
+        audioOnly: Boolean(state.call?.audioOnly)
+      }, callId);
+    }
+
+    async function startVideoCall(options = {}) {
+      const room = currentCallableRoom();
+      const targets = callTargetsForRoom(room);
+      if (!room || !targets.length) {
+        showToast(room?.type === "group" ? "В группе пока нет других участников." : "Видеозвонок доступен в личном чате или группе.");
+        return;
+      }
+      if (state.mediaRecorder?.state === "recording") {
+        showToast("Сначала останови запись голосового.");
+        return;
+      }
+      const callId = makeCallId();
+      const audioOnly = Boolean(options.audioOnly);
+      try {
+        const callKind = audioOnly ? "Аудиозвонок" : "Звонок";
+        const title = room.type === "group" ? `${audioOnly ? "Групповой аудиозвонок" : "Групповой звонок"}: ${callRoomTitle(room)}` : `${callKind}: ${targets[0].nickname}`;
+        showCallPanel(title, audioOnly ? "Запрашиваю микрофон..." : "Запрашиваю камеру...", "active", { audioOnly });
+        const localStream = await getLocalStream({ audioOnly });
+        resetRemoteVideos();
+        state.call = {
+          callId,
+          roomId: room.id,
+          roomTitle: callRoomTitle(room),
+          isGroup: room.type === "group",
+          audioOnly,
+          peers: new Map(),
+          localStream,
+          muted: false,
+          cameraOff: audioOnly
+        };
+        await Promise.all(targets.map((target) => startOfferTo(target, localStream, callId, room)));
+        els.callStatus.textContent = room.type === "group" ? `Звоним участникам: ${targets.length}` : "Звоним...";
+      } catch (error) {
+        cleanupCall();
+        showToast(error.message);
+      }
+    }
+
+    async function startAudioCall() {
+      await startVideoCall({ audioOnly: true });
+    }
+
+    function showIncomingCall(event) {
+      state.pendingOffer = event;
+      const isGroup = event.payload?.isGroup;
+      const audioOnly = Boolean(event.payload?.audioOnly);
+      const roomTitle = event.payload?.roomTitle || "группа";
+      showCallPanel(
+        isGroup ? `${audioOnly ? "Групповой аудиозвонок" : "Групповой звонок"}: ${roomTitle}` : `Звонит: ${event.from?.nickname || "пользователь"}`,
+        isGroup ? `${event.from?.nickname || "Пользователь"} зовёт группу` : (audioOnly ? "Входящий аудиозвонок" : "Входящий видеозвонок"),
+        "incoming",
+        { audioOnly }
+      );
+    }
+
+    async function acceptIncomingCall() {
+      const offer = state.pendingOffer;
+      if (!offer) return;
+      try {
+        const isGroup = offer.payload?.isGroup;
+        const audioOnly = Boolean(offer.payload?.audioOnly);
+        showCallPanel(
+          isGroup ? `${audioOnly ? "Групповой аудиозвонок" : "Групповой звонок"}: ${offer.payload?.roomTitle || "группа"}` : `${audioOnly ? "Аудиозвонок" : "Звонок"}: ${offer.from?.nickname || "пользователь"}`,
+          audioOnly ? "Запрашиваю микрофон..." : "Запрашиваю камеру...",
+          "active",
+          { audioOnly }
+        );
+        const localStream = await getLocalStream({ audioOnly });
+        resetRemoteVideos();
+        const pc = createPeer(offer.from, offer.callId);
+        localStream.getTracks().forEach((track) => pc.addTrack(track, localStream));
+        state.call = {
+          callId: offer.callId,
+          roomId: offer.payload?.roomId || "",
+          roomTitle: offer.payload?.roomTitle || offer.from?.nickname || "Звонок",
+          isGroup,
+          audioOnly,
+          peers: new Map([[offer.from.id, { user: offer.from, pc }]]),
+          localStream,
+          muted: false,
+          cameraOff: audioOnly
+        };
+        await pc.setRemoteDescription(offer.payload.description);
+        await flushQueuedIce(offer.from.id);
+        const answer = await pc.createAnswer();
+        await pc.setLocalDescription(answer);
+        await sendCallSignal("answer", offer.from.id, { description: pc.localDescription }, offer.callId);
+        state.pendingOffer = null;
+        els.callStatus.textContent = "Соединение...";
+      } catch (error) {
+        await sendCallSignal("reject", offer.from.id, {}, offer.callId).catch(() => {});
+        cleanupCall();
+        showToast(error.message);
+      }
+    }
+
+    async function rejectIncomingCall() {
+      const offer = state.pendingOffer;
+      if (offer) await sendCallSignal("reject", offer.from.id, {}, offer.callId).catch(() => {});
+      cleanupCall();
+    }
+
+    async function endCurrentCall(sendSignal = true) {
+      const call = state.call;
+      const pending = state.pendingOffer;
+      if (sendSignal && call?.peers) {
+        await Promise.all(Array.from(call.peers.keys()).map((targetUserId) => (
+          sendCallSignal("hangup", targetUserId, { roomId: call.roomId, isGroup: call.isGroup }, call.callId).catch(() => {})
+        )));
+      }
+      if (sendSignal && pending?.from?.id) await sendCallSignal("cancel", pending.from.id, {}, pending.callId).catch(() => {});
+      cleanupCall();
+    }
+
+    async function handleCallEvent(event) {
+      if (event.type === "offer") {
+        if (state.call) {
+          await sendCallSignal("reject", event.from.id, {}, event.callId).catch(() => {});
+          return;
+        }
+        showIncomingCall(event);
+        if ("Notification" in window && Notification.permission === "granted" && document.visibilityState === "hidden") {
+          new Notification(event.payload?.audioOnly ? "Входящий аудиозвонок" : "Входящий видеозвонок", {
+            body: event.from?.nickname || "Тебе звонят",
+            tag: event.callId
+          });
+        }
+        return;
+      }
+      if (event.type === "answer" && state.call?.callId === event.callId) {
+        const peer = state.call.peers?.get(event.from?.id);
+        await peer?.pc?.setRemoteDescription(event.payload.description).catch(() => {});
+        await flushQueuedIce(event.from?.id);
+        els.callStatus.textContent = "Соединение...";
+        return;
+      }
+      if (event.type === "ice" && event.payload?.candidate) {
+        if (state.call?.callId !== event.callId) {
+          queueIceCandidate(event);
+          return;
+        }
+        const peer = state.call.peers?.get(event.from?.id);
+        if (!peer?.pc?.remoteDescription) {
+          queueIceCandidate(event);
+          return;
+        }
+        await peer.pc.addIceCandidate(event.payload.candidate).catch(() => queueIceCandidate(event));
+        return;
+      }
+      if (["hangup", "reject", "cancel"].includes(event.type)) {
+        if (state.call?.isGroup && event.from?.id && state.call.peers?.has(event.from.id)) {
+          state.call.peers.get(event.from.id)?.pc?.close?.();
+          state.call.peers.delete(event.from.id);
+          removeRemotePeer(event.from.id);
+          showToast(event.type === "reject" ? `${event.from.nickname || "Участник"} отклонил звонок.` : `${event.from.nickname || "Участник"} вышел из звонка.`);
+          els.callStatus.textContent = state.call.peers.size ? `В звонке: ${state.call.peers.size + 1}` : "Ждём участников...";
+          return;
+        }
+        showToast(event.type === "reject" ? "Звонок отклонён." : "Звонок завершён.");
+        await endCurrentCall(false);
+      }
+    }
+
+    function toggleMute() {
+      if (!state.call?.localStream) return;
+      const tracks = state.call.localStream.getAudioTracks();
+      if (!tracks.length) {
+        showToast("Микрофон не подключен.");
+        return;
+      }
+      state.call.muted = !state.call.muted;
+      tracks.forEach((track) => { track.enabled = !state.call.muted; });
+      els.muteCallButton.textContent = state.call.muted ? "Включить микрофон" : "Микрофон";
+    }
+
+    function toggleCamera() {
+      if (!state.call?.localStream) return;
+      const tracks = state.call.localStream.getVideoTracks();
+      if (!tracks.length) {
+        showToast("Камера не подключена.");
+        return;
+      }
+      state.call.cameraOff = !state.call.cameraOff;
+      tracks.forEach((track) => { track.enabled = !state.call.cameraOff; });
+      els.cameraCallButton.textContent = state.call.cameraOff ? "Включить камеру" : "Камера";
+    }
+
+    function applyContactFlags(users) {
+      const contacts = new Set(state.user?.contactIds || []);
+      const blocked = new Set(state.user?.blockedUserIds || []);
+      return (users || [])
+        .filter((user) => user.id !== state.user?.id)
+        .map((user) => ({ ...user, isContact: Boolean(user.isContact || contacts.has(user.id)), isBlocked: Boolean(user.isBlocked || blocked.has(user.id)) }));
+    }
+
+    function renderUserProfile() {
+      const user = state.viewUser ? findUser(state.viewUser.id) || state.viewUser : null;
+      if (!user) return;
+      state.viewUser = user;
+      setAvatarElement(els.viewProfileAvatar, user, "?");
+      els.viewProfileName.textContent = user.nickname || "Профиль";
+      els.viewProfileStatus.textContent = user.isContact ? `Контакт · ${seenLabel(user)}` : seenLabel(user);
+      els.viewProfileBio.textContent = user.bio || "Нет описания.";
+      els.viewProfileContact.textContent = user.isContact ? "Убрать" : "Сохранить";
+      els.viewProfileBlock.textContent = user.isBlocked ? "Разблокировать" : "Заблокировать";
+      els.viewProfileChat.disabled = Boolean(user.isBlocked);
+      els.viewProfileContact.disabled = Boolean(user.isBlocked);
+    }
+
+    function openUserProfile(userIdOrUser) {
+      const user = typeof userIdOrUser === "string" ? findUser(userIdOrUser) : userIdOrUser;
+      if (!user || user.id === state.user?.id) return;
+      state.viewUser = user;
+      renderUserProfile();
+      els.userProfilePanel.classList.remove("hidden");
+    }
+
+    function closeUserProfile() {
+      state.viewUser = null;
+      els.userProfilePanel.classList.add("hidden");
+    }
+
+    function renderProfileEmailStatus(result = null) {
+      const user = state.user || {};
+      const pending = user.pendingEmail;
+      const verified = Boolean(user.emailVerified);
+      const lines = [];
+      lines.push(verified ? `Почта подтверждена: ${escapeHtml(user.email || "")}` : `Почта не подтверждена: ${escapeHtml(user.email || "")}`);
+      if (pending) lines.push(`Новая почта ждёт подтверждения: ${escapeHtml(pending)}`);
+      if (result?.sent) lines.push("Письмо подтверждения отправлено.");
+      if (result?.needsMailSetup) lines.push("На Render нужно настроить SMTP или RESEND_API_KEY, иначе письма не будут приходить.");
+      if (result?.devLink) lines.push(`<a href="${escapeHtml(result.devLink)}" target="_blank" rel="noreferrer">Открыть dev-ссылку подтверждения</a>`);
+      if (result?.error) lines.push(escapeHtml(result.error));
+      els.profileEmailStatus.innerHTML = lines.join("<br>");
+      els.sendVerificationButton.textContent = pending || !verified ? "Отправить подтверждение" : "Повторить письмо";
+    }
+
+    function showVerificationToast(result) {
+      if (!result) return;
+      if (result.sent) showToast("Письмо подтверждения отправлено.");
+      else if (result.needsMailSetup) showToast("Почта на сервере ещё не настроена.");
+      else if (result.error) showToast(result.error);
+    }
+
+    async function openSecurityPanel() {
+      els.securityError.textContent = "";
+      els.securityStatus.innerHTML = "<div>Проверяем защиту...</div>";
+      els.securityPanel.classList.remove("hidden");
+      const data = await api("/api/security");
+      const sessions = data.sessions || [];
+      let reportHtml = "";
+      if (state.user?.isAdmin) {
+        try {
+          const reportData = await api("/api/admin/reports");
+          const reports = reportData.reports || [];
+          reportHtml = `
+            <div><strong>Жалобы</strong><span>${escapeHtml(String(reports.length))} последних</span></div>
+            ${reports.slice(0, 5).map((report) => `
+              <div><strong>${escapeHtml(report.target?.nickname || "?")}</strong><span>${escapeHtml(report.reason || "Жалоба")} · ${escapeHtml(report.reporter?.nickname || "?")}</span></div>
+            `).join("")}
+          `;
+        } catch {}
+      }
+      els.securityStatus.innerHTML = `
+        <div><strong>Хеш пароля</strong><span>${escapeHtml(String(data.passwordIterations || 0))} итераций PBKDF2</span></div>
+        <div><strong>Активные входы</strong><span>${escapeHtml(String(sessions.length))}</span></div>
+        <div><strong>Push-устройства</strong><span>${escapeHtml(String(data.pushDevices || 0))}</span></div>
+        <div><strong>Текущая сессия</strong><span>${escapeHtml(formatDateTime(sessions.find((item) => item.current)?.createdAt))}</span></div>
+        ${reportHtml}
+      `;
+    }
+
+    async function revokeOtherSessions() {
+      els.securityError.textContent = "";
+      const data = await api("/api/security/revoke-other-sessions", { method: "POST" });
+      showToast(`Сброшено входов: ${data.removed || 0}`);
+      await openSecurityPanel();
+    }
+
+    function patchContactLocal(userId, isContact) {
+      state.user.contactIds ||= [];
+      if (isContact && !state.user.contactIds.includes(userId)) {
+        state.user.contactIds.push(userId);
+      }
+      if (!isContact) {
+        state.user.contactIds = state.user.contactIds.filter((id) => id !== userId);
+      }
+      state.users = state.users.map((user) => user.id === userId ? { ...user, isContact } : user);
+      state.searchUsers = state.searchUsers.map((user) => user.id === userId ? { ...user, isContact } : user);
+      if (state.viewUser?.id === userId) state.viewUser = { ...state.viewUser, isContact };
+      renderShell();
+    }
+
+    async function setContact(userId, action) {
+      const previousUser = { ...state.user, contactIds: [...(state.user?.contactIds || [])] };
+      const previousUsers = state.users.map((user) => ({ ...user }));
+      const previousViewUser = state.viewUser ? { ...state.viewUser } : null;
+      const shouldBeContact = action !== "remove";
+      patchContactLocal(userId, shouldBeContact);
+      try {
+        const data = await api("/api/contacts", {
+          method: "POST",
+          body: { userId, action }
+        });
+        state.user = data.user;
+        state.users = applyContactFlags(data.users || []);
+        state.searchUsers = applyContactFlags(state.searchUsers);
+        renderShell();
+        if (state.viewUser?.id === userId) {
+          state.viewUser = findUser(userId) || state.viewUser;
+          renderUserProfile();
+        }
+        return findUser(userId);
+      } catch (error) {
+        state.user = previousUser;
+        state.users = previousUsers;
+        state.viewUser = previousViewUser;
+        renderShell();
+        throw error;
+      }
+    }
+
+    function patchBlockLocal(userId, isBlocked) {
+      state.user.blockedUserIds ||= [];
+      if (isBlocked && !state.user.blockedUserIds.includes(userId)) state.user.blockedUserIds.push(userId);
+      if (!isBlocked) state.user.blockedUserIds = state.user.blockedUserIds.filter((id) => id !== userId);
+      state.users = state.users.map((user) => user.id === userId ? { ...user, isBlocked, isContact: isBlocked ? false : user.isContact } : user);
+      state.searchUsers = state.searchUsers.map((user) => user.id === userId ? { ...user, isBlocked, isContact: isBlocked ? false : user.isContact } : user);
+      if (state.viewUser?.id === userId) state.viewUser = { ...state.viewUser, isBlocked, isContact: isBlocked ? false : state.viewUser.isContact };
+      renderShell();
+    }
+
+    async function toggleBlockUser(userId) {
+      const user = findUser(userId);
+      if (!user) return;
+      const shouldBlock = !user.isBlocked;
+      if (shouldBlock && !confirm(`Заблокировать ${user.nickname}? Он не сможет писать тебе в личку.`)) return;
+      patchBlockLocal(userId, shouldBlock);
+      try {
+        const data = await api("/api/blocks", {
+          method: "POST",
+          body: { userId, action: shouldBlock ? "block" : "unblock" }
+        });
+        state.user = data.user || state.user;
+        state.users = applyContactFlags(data.users || state.users);
+        state.searchUsers = applyContactFlags(state.searchUsers);
+        if (state.viewUser?.id === userId) state.viewUser = findUser(userId) || state.viewUser;
+        renderShell();
+        showToast(shouldBlock ? "Пользователь заблокирован." : "Пользователь разблокирован.");
+        if (state.roomId === directRoomFor(userId)) openRoom("global", true).catch(() => {});
+      } catch (error) {
+        patchBlockLocal(userId, !shouldBlock);
+        showToast(error.message);
+      }
+    }
+
+    async function reportUser(userId, messageId = "") {
+      const user = findUser(userId) || state.messages.find((message) => message.senderId === userId)?.sender;
+      if (!user) return;
+      const reason = prompt(`Жалоба на ${user.nickname}. Коротко напиши причину:`, messageId ? "Плохое сообщение" : "Нарушение правил");
+      if (!reason) return;
+      try {
+        await api("/api/reports", {
+          method: "POST",
+          body: { userId, messageId, reason }
+        });
+        showToast("Жалоба отправлена.");
+      } catch (error) {
+        showToast(error.message);
+      }
+    }
+
+    function directRoomFor(userId) {
+      return `dm:${[state.user.id, userId].sort().join(":")}`;
+    }
+
+    async function copyRoomLink() {
+      const url = `${location.origin}${location.pathname}?room=${encodeURIComponent(state.roomId || "global")}`;
+      if (navigator.clipboard?.writeText) {
+        await navigator.clipboard.writeText(url);
+      } else {
+        const input = document.createElement("input");
+        input.value = url;
+        input.style.position = "fixed";
+        input.style.opacity = "0";
+        document.body.appendChild(input);
+        input.select();
+        document.execCommand("copy");
+        input.remove();
+      }
+      showToast("Ссылка на чат скопирована.");
+    }
+
+    async function copyCallInvite() {
+      const roomId = state.call?.roomId || state.roomId || "global";
+      const url = `${location.origin}${location.pathname}?room=${encodeURIComponent(roomId)}`;
+      if (navigator.clipboard?.writeText) {
+        await navigator.clipboard.writeText(url);
+      } else {
+        const input = document.createElement("input");
+        input.value = url;
+        input.style.position = "fixed";
+        input.style.opacity = "0";
+        document.body.appendChild(input);
+        input.select();
+        document.execCommand("copy");
+        input.remove();
+      }
+      showToast("Ссылка-приглашение в чат скопирована.");
+    }
+
+    async function copyAppLink() {
+      const url = `${location.origin}${location.pathname}`;
+      if (navigator.clipboard?.writeText) {
+        await navigator.clipboard.writeText(url);
+      } else {
+        const input = document.createElement("input");
+        input.value = url;
+        input.style.position = "fixed";
+        input.style.opacity = "0";
+        document.body.appendChild(input);
+        input.select();
+        document.execCommand("copy");
+        input.remove();
+      }
+      showToast("Ссылка на приложение скопирована.");
+    }
+
+    async function openDirect(userId) {
+      const roomId = directRoomFor(userId);
+      if (!state.rooms.some((room) => room.id === roomId)) {
+        const user = findUser(userId);
+        state.rooms.push({ id: roomId, type: "direct", title: user?.nickname || "Личный чат", user });
+      }
+      state.activeTab = "chats";
+      await openRoom(roomId);
+    }
+
+    async function toggleContact(userId) {
+      const user = findUser(userId);
+      if (!user) return;
+      try {
+        await setContact(userId, user.isContact ? "remove" : "add");
+        showToast(user.isContact ? "Контакт убран." : "Контакт сохранён.");
+      } catch (error) {
+        showToast(error.message);
+      }
+    }
+
+    async function openRoom(roomId, silent = false) {
+      const nextRoomId = roomId || "global";
+      if (state.roomId !== nextRoomId) {
+        state.replyToMessageId = "";
+        state.editingMessageId = "";
+      }
+      state.roomId = nextRoomId;
+      const nextUrl = state.roomId === "global" ? location.pathname : `${location.pathname}?room=${encodeURIComponent(state.roomId)}`;
+      history.replaceState(null, "", nextUrl);
+      if (window.matchMedia("(max-width: 760px)").matches) els.appView.classList.add("chat-open");
+      renderShell();
+      try {
+        const query = state.messageSearch.trim();
+        const data = await api(`/api/messages?room=${encodeURIComponent(state.roomId)}${query ? `&q=${encodeURIComponent(query)}` : ""}`);
+        state.messages = data.messages || [];
+        state.pins = data.pins || [];
+        renderPins();
+        renderMessages();
+        markRoomRead().catch(() => {});
+      } catch (error) {
+        if (!silent) showToast(error.message);
+      }
+    }
+
+    function renderRoomHeader() {
+      const room = findRoom(state.roomId) || { id: "global", title: "Общий чат" };
+      const isGlobal = room.id === "global";
+      const isGroup = room.type === "group";
+      const title = isGlobal ? "Общий чат" : room.title;
+      const sub = isGlobal ? "Все пользователи Orbit Chat" : (isGroup ? (room.subtitle || "Группа") : seenLabel(room.user));
+      els.roomName.textContent = title;
+      els.roomSub.textContent = sub;
+      els.roomAvatar.style.background = isGroup ? "#ffcc66" : (isGlobal ? "#46d9ff" : room.user?.avatarColor || "#9eff8f");
+      els.roomAvatar.innerHTML = isGlobal ? "О" : (isGroup ? escapeHtml(initials(title)) : `${avatarInner(room.user, title)}<span class="dot ${room.user?.status === "online" ? "online" : ""}"></span>`);
+    }
+
+    function roleLabel(role) {
+      return role === "owner" ? "владелец" : (role === "admin" ? "админ" : "участник");
+    }
+
+    function currentRoom() {
+      return findRoom(state.roomId) || { id: "global", type: "global", title: "Общий чат" };
+    }
+
+    function groupMemberRole(group, userId) {
+      if (!group) return "";
+      if (group.ownerId === userId) return "owner";
+      if ((group.adminIds || []).includes(userId)) return "admin";
+      return "member";
+    }
+
+    function canManageCurrentGroup(group) {
+      const role = groupMemberRole(group, state.user?.id);
+      return role === "owner" || role === "admin";
+    }
+
+    function renderRoomPanel() {
+      const room = currentRoom();
+      const group = room.group;
+      els.roomError.textContent = "";
+      els.roomPanelTitle.textContent = room.type === "group" ? room.title : (room.type === "direct" ? room.title : "Общий чат");
+      els.roomPanelSub.textContent = room.type === "group" ? `${group?.memberIds?.length || 0} участников` : (room.type === "direct" ? "Личный чат" : "Все зарегистрированные пользователи");
+      els.leaveGroupButton.classList.toggle("hidden", room.type !== "group");
+
+      if (room.type === "global") {
+        els.roomSettings.innerHTML = `<div class="notify-help">Общий чат видят все пользователи приложения. Если кто-то мешает, открой профиль и нажми “Заблокировать” или “Пожаловаться”.</div>`;
+        els.roomMembers.innerHTML = "";
+        return;
+      }
+
+      if (room.type === "direct") {
+        els.roomSettings.innerHTML = `
+          <div class="notify-help">Личный чат с ${escapeHtml(room.user?.nickname || room.title)}. Можно открыть профиль, сохранить контакт, заблокировать или пожаловаться.</div>
+          <button class="primary-button" type="button" data-room-profile="${escapeHtml(room.user?.id || "")}">Открыть профиль</button>
+        `;
+        els.roomMembers.innerHTML = "";
+        els.roomSettings.querySelector("[data-room-profile]")?.addEventListener("click", (event) => {
+          els.roomPanel.classList.add("hidden");
+          openUserProfile(event.currentTarget.dataset.roomProfile);
+        });
+        return;
+      }
+
+      const canManage = canManageCurrentGroup(group);
+      els.roomSettings.innerHTML = canManage ? `
+        <label>Название группы
+          <input id="roomNameInput" type="text" maxlength="32" value="${escapeHtml(room.title)}">
+        </label>
+        <button class="primary-button" type="button" data-group-action="rename">Сохранить название</button>
+      ` : `<div class="notify-help">Управлять группой могут владелец и админы.</div>`;
+
+      const memberRows = (group?.memberIds || []).map((id) => {
+        const user = id === state.user?.id ? state.user : findUser(id);
+        const role = groupMemberRole(group, id);
+        const self = id === state.user?.id;
+        const canOwnerEdit = group.ownerId === state.user?.id && !self && role !== "owner";
+        const canAdminRemove = canManage && !self && role !== "owner";
+        return `
+          <div class="room-member-row">
+            ${avatarHtml(user || { nickname: "?", avatarColor: "#ffcc66" }, { small: true, dot: true })}
+            <div class="row-main">
+              <strong>${escapeHtml(self ? `${user?.nickname || "ты"} (ты)` : user?.nickname || "Участник")}</strong>
+              <span class="role-pill">${roleLabel(role)}</span>
+            </div>
+            <div class="row-actions">
+              ${canOwnerEdit ? `<button class="mini-action" type="button" data-group-user="${escapeHtml(id)}" data-group-action="${role === "admin" ? "demote" : "promote"}">${role === "admin" ? "Снять" : "Админ"}</button>` : ""}
+              ${canAdminRemove ? `<button class="mini-action" type="button" data-group-user="${escapeHtml(id)}" data-group-action="remove">Убрать</button>` : ""}
+            </div>
+          </div>
+        `;
+      }).join("");
+
+      const addRows = canManage ? state.users
+        .filter((user) => user.id !== state.user?.id && !user.isBlocked && !(group?.memberIds || []).includes(user.id))
+        .slice(0, 8)
+        .map((user) => `
+          <div class="room-member-row">
+            ${avatarHtml(user, { small: true, dot: true })}
+            <div class="row-main">
+              <strong>${escapeHtml(user.nickname)}</strong>
+              <span>${escapeHtml(user.isContact ? "Контакт" : seenLabel(user))}</span>
+            </div>
+            <button class="mini-action" type="button" data-group-user="${escapeHtml(user.id)}" data-group-action="add">Добавить</button>
+          </div>
+        `).join("") : "";
+
+      els.roomMembers.innerHTML = `
+        ${memberRows}
+        ${addRows ? `<div class="notify-help">Добавить в группу</div>${addRows}` : ""}
+      `;
+      els.roomPanel.querySelectorAll("[data-group-action]").forEach((button) => {
+        button.addEventListener("click", () => manageGroup(button.dataset.groupAction, button.dataset.groupUser || ""));
+      });
+    }
+
+    async function openRoomPanel() {
+      renderRoomPanel();
+      els.roomPanel.classList.remove("hidden");
+    }
+
+    async function manageGroup(action, userId = "") {
+      const room = currentRoom();
+      const group = room.group;
+      if (!group) return;
+      try {
+        const body = { groupId: group.id, action, userId };
+        if (action === "rename") body.name = $("roomNameInput")?.value || room.title;
+        const data = await api("/api/groups/manage", { method: "POST", body });
+        state.rooms = data.rooms || state.rooms;
+        renderShell();
+        renderRoomPanel();
+        showToast("Группа обновлена.");
+      } catch (error) {
+        els.roomError.textContent = error.message;
+      }
+    }
+
+    function renderMediaItems() {
+      const items = state.mediaItems || [];
+      if (!items.length) {
+        els.mediaItems.innerHTML = `<div class="empty-state"><strong>Медиа пока нет</strong>Когда в чате появятся фото, файлы или голосовые, они будут здесь.</div>`;
+        return;
+      }
+      els.mediaItems.innerHTML = items.map((item) => {
+        const isImage = item.kind === "image";
+        const label = item.kind === "audio" ? "VOICE" : fileExt(item.name || "file").toUpperCase();
+        return `
+          <a class="media-item" href="${escapeHtml(item.url)}" target="_blank" rel="noreferrer" data-media-message="${escapeHtml(item.messageId || "")}">
+            <div class="media-thumb">${isImage ? `<img src="${escapeHtml(item.url)}" alt="">` : escapeHtml(label || "FILE")}</div>
+            <strong>${escapeHtml(item.name || (isImage ? "Фото" : "Файл"))}</strong>
+            <span>${escapeHtml(item.sender?.nickname || "?")} · ${timeLabel(item.createdAt)}</span>
+          </a>
+        `;
+      }).join("");
+    }
+
+    async function openMediaPanel() {
+      els.mediaError.textContent = "";
+      els.mediaItems.innerHTML = `<div class="empty-state"><strong>Загружаем...</strong>Собираем медиа из этого чата.</div>`;
+      els.mediaPanel.classList.remove("hidden");
+      try {
+        const data = await api(`/api/media?room=${encodeURIComponent(state.roomId)}`);
+        state.mediaItems = data.items || [];
+        renderMediaItems();
+      } catch (error) {
+        els.mediaError.textContent = error.message;
+      }
+    }
+
+    function isPinnedMessage(messageId) {
+      return (state.pins || []).some((message) => message.id === messageId);
+    }
+
+    function renderReactionPicker(message) {
+      if (message.deletedAt) return "";
+      const mine = message.reactions?.mine || "";
+      return `<div class="reaction-row">${REACTION_CHOICES.map((emoji) => `
+        <button class="reaction-chip ${mine === emoji ? "active" : ""}" type="button" data-react="${escapeHtml(message.id)}" data-emoji="${escapeHtml(emoji)}">${emoji}</button>
+      `).join("")}</div>`;
+    }
+
+    function renderReactionSummary(message) {
+      if (message.deletedAt) return "";
+      const items = message.reactions?.items || [];
+      if (!items.length) return "";
+      return `<div class="reaction-row">${items.map((item) => `
+        <button class="reaction-chip ${message.reactions?.mine === item.emoji ? "active" : ""}" type="button" data-react="${escapeHtml(message.id)}" data-emoji="${escapeHtml(item.emoji)}">${escapeHtml(item.emoji)} ${item.count}</button>
+      `).join("")}</div>`;
+    }
+
+    function renderMessageTools(message, own) {
+      if (message.deletedAt) return "";
+      const pinned = isPinnedMessage(message.id);
+      return `
+        <div class="msg-tools">
+          <button class="tool-chip" type="button" data-reply="${escapeHtml(message.id)}">Ответить</button>
+          <button class="tool-chip" type="button" data-pin="${escapeHtml(message.id)}" data-pin-action="${pinned ? "unpin" : "pin"}">${pinned ? "Открепить" : "Закрепить"}</button>
+          ${own ? "" : `<button class="tool-chip" type="button" data-report-message="${escapeHtml(message.id)}" data-report-user="${escapeHtml(message.senderId)}">Жалоба</button>`}
+          ${own ? `<button class="tool-chip" type="button" data-edit="${escapeHtml(message.id)}">Изменить</button>` : ""}
+          ${own ? `<button class="tool-chip" type="button" data-delete="${escapeHtml(message.id)}">Удалить</button>` : ""}
+        </div>
+      `;
+    }
+
+    function renderMessageMeta(message, own) {
+      const parts = [];
+      if (message.editedAt && !message.deletedAt) parts.push("изменено");
+      if (own && message.readCount > 0) parts.push(`прочитано ${message.readCount}`);
+      return parts.length ? `<div class="message-meta">${parts.map((item) => `<span>${escapeHtml(item)}</span>`).join("")}</div>` : "";
+    }
+
+    function wireMessageActions() {
+      els.messagesView.querySelectorAll("[data-message-profile]").forEach((node) => {
+        node.addEventListener("click", () => {
+          const id = node.dataset.messageProfile;
+          openUserProfile(findUser(id) || state.messages.find((message) => message.senderId === id)?.sender);
+        });
+      });
+      els.messagesView.querySelectorAll("[data-jump]").forEach((node) => {
+        node.addEventListener("click", () => jumpToMessage(node.dataset.jump));
+      });
+      els.messagesView.querySelectorAll("[data-react]").forEach((button) => {
+        button.addEventListener("click", () => reactToMessage(button.dataset.react, button.dataset.emoji));
+      });
+      els.messagesView.querySelectorAll("[data-reply]").forEach((button) => {
+        button.addEventListener("click", () => startReply(button.dataset.reply));
+      });
+      els.messagesView.querySelectorAll("[data-report-message]").forEach((button) => {
+        button.addEventListener("click", () => reportUser(button.dataset.reportUser, button.dataset.reportMessage));
+      });
+      els.messagesView.querySelectorAll("[data-edit]").forEach((button) => {
+        button.addEventListener("click", () => startEditMessage(button.dataset.edit));
+      });
+      els.messagesView.querySelectorAll("[data-delete]").forEach((button) => {
+        button.addEventListener("click", () => deleteMessage(button.dataset.delete));
+      });
+      els.messagesView.querySelectorAll("[data-pin]").forEach((button) => {
+        button.addEventListener("click", () => pinMessage(button.dataset.pin, button.dataset.pinAction));
+      });
+    }
+
+    function renderMessages() {
+      if (!state.messages.length) {
+        const isGlobal = state.roomId === "global";
+        const isGroup = findRoom(state.roomId)?.type === "group";
+        const searching = state.messageSearch.trim();
+        els.messagesView.innerHTML = `<div class="empty-state"><strong>${searching ? "Ничего не найдено" : (isGlobal ? "Общий чат пустой" : (isGroup ? "Группа пустая" : "Личный чат пустой"))}</strong>${searching ? "Попробуй другое слово или очисти поиск." : (isGlobal ? "Напиши первое сообщение, его увидят все зарегистрированные пользователи." : (isGroup ? "Напиши первое сообщение участникам группы." : "Напиши сообщение, и оно появится у собеседника сразу после входа."))}</div>`;
+        return;
+      }
+      els.messagesView.innerHTML = state.messages.map((message) => {
+        const own = message.senderId === state.user.id;
+        const deleted = Boolean(message.deletedAt);
+        return `
+          <article id="msg-${escapeHtml(message.id)}" class="msg ${own ? "own" : ""}">
+            ${own ? "" : avatarHtml(message.sender, { small: true })}
+            <div class="bubble">
+              <div class="bubble-head">
+                <span ${own ? "" : `class="sender-link" data-message-profile="${escapeHtml(message.senderId)}"`}>${escapeHtml(own ? "ты" : message.sender?.nickname || "?")}</span>
+                <span>${timeLabel(message.createdAt)}</span>
+              </div>
+              ${renderReplyPreview(message)}
+              ${deleted ? `<div class="bubble-text deleted">сообщение удалено</div>` : (message.text ? `<div class="bubble-text">${escapeHtml(message.text)}</div>` : "")}
+              ${deleted ? "" : renderAttachmentStack(message)}
+              ${renderReactionSummary(message)}
+              ${renderReactionPicker(message)}
+              ${renderMessageTools(message, own)}
+              ${renderMessageMeta(message, own)}
+            </div>
+          </article>
+        `;
+      }).join("");
+      wireMessageActions();
+      renderReplyBar();
+      requestAnimationFrame(() => {
+        els.messagesView.scrollTop = els.messagesView.scrollHeight;
+      });
+    }
+
+    function mergeMessage(message) {
+      if (message.roomId !== state.roomId) return false;
+      if (state.messages.some((item) => item.id === message.id)) return true;
+      state.messages.push(message);
+      state.messages.sort((a, b) => a.createdAt - b.createdAt);
+      renderMessages();
+      markRoomRead().catch(() => {});
+      return true;
+    }
+
+    function updateMessageLocal(message) {
+      if (!message || message.roomId !== state.roomId) return;
+      const index = state.messages.findIndex((item) => item.id === message.id);
+      if (index >= 0) {
+        const current = state.messages[index];
+        const mine = current.reactions?.mine || "";
+        const incomingItems = message.reactions?.items || [];
+        const shouldPreserveMine = mine && !message.reactions?.mine && incomingItems.some((item) => item.emoji === mine);
+        state.messages[index] = {
+          ...current,
+          ...message,
+          reactions: shouldPreserveMine ? { ...message.reactions, mine } : message.reactions
+        };
+      } else {
+        state.messages.push(message);
+      }
+      state.messages.sort((a, b) => a.createdAt - b.createdAt);
+      renderMessages();
+    }
+
+    function applyPins(pins) {
+      state.pins = pins || [];
+      renderPins();
+      renderMessages();
+    }
+
+    function jumpToMessage(messageId) {
+      const node = document.getElementById(`msg-${messageId}`);
+      if (!node) return;
+      node.scrollIntoView({ behavior: "smooth", block: "center" });
+      node.animate?.([
+        { filter: "brightness(1.8)" },
+        { filter: "brightness(1)" }
+      ], { duration: 900, easing: "ease-out" });
+    }
+
+    async function reactToMessage(messageId, emoji) {
+      try {
+        const data = await api("/api/messages/react", {
+          method: "POST",
+          body: { messageId, emoji }
+        });
+        updateMessageLocal(data.message);
+      } catch (error) {
+        showToast(error.message);
+      }
+    }
+
+    function startEditMessage(messageId) {
+      const message = state.messages.find((item) => item.id === messageId);
+      if (!message || message.deletedAt || message.senderId !== state.user.id) return;
+      state.editingMessageId = message.id;
+      els.messageInput.value = message.text || "";
+      els.editBar.classList.remove("hidden");
+      els.messageInput.focus();
+    }
+
+    function cancelEdit() {
+      state.editingMessageId = "";
+      els.editBar.classList.add("hidden");
+      els.messageInput.value = "";
+    }
+
+    function startReply(messageId) {
+      const message = state.messages.find((item) => item.id === messageId && !item.deletedAt);
+      if (!message) return;
+      state.replyToMessageId = message.id;
+      renderReplyBar();
+      els.messageInput.focus();
+    }
+
+    function cancelReply() {
+      state.replyToMessageId = "";
+      renderReplyBar();
+    }
+
+    async function deleteMessage(messageId) {
+      if (!confirm("Удалить это сообщение?")) return;
+      try {
+        const data = await api("/api/messages/delete", {
+          method: "POST",
+          body: { messageId }
+        });
+        updateMessageLocal(data.message);
+        applyPins(data.pins);
+        loadRooms();
+      } catch (error) {
+        showToast(error.message);
+      }
+    }
+
+    async function pinMessage(messageId, action) {
+      try {
+        const data = await api("/api/messages/pin", {
+          method: "POST",
+          body: { messageId, action }
+        });
+        applyPins(data.pins);
+        showToast(action === "unpin" ? "Сообщение откреплено." : "Сообщение закреплено.");
+      } catch (error) {
+        showToast(error.message);
+      }
+    }
+
+    async function markRoomRead() {
+      const last = [...state.messages].reverse().find((message) => message.senderId !== state.user?.id);
+      if (!last) return;
+      await api("/api/read", {
+        method: "POST",
+        body: { roomId: state.roomId, lastMessageId: last.id }
+      });
+      loadRooms().catch(() => {});
+    }
+
+    function renderTyping() {
+      const nowTime = Date.now();
+      const names = Object.values(state.typing)
+        .filter((item) => item.roomId === state.roomId && item.expiresAt > nowTime && item.user?.id !== state.user?.id)
+        .map((item) => item.user.nickname);
+      els.typingLine.classList.toggle("hidden", !names.length);
+      els.typingLine.textContent = names.length ? `${names.slice(0, 2).join(", ")} печатает...` : "";
+    }
+
+    function receiveTyping(event) {
+      if (!event?.user?.id) return;
+      state.typing[event.user.id] = event;
+      renderTyping();
+    }
+
+    function sendTyping() {
+      clearTimeout(state.typingTimer);
+      state.typingTimer = setTimeout(() => {
+        api("/api/typing", {
+          method: "POST",
+          body: { roomId: state.roomId }
+        }).catch(() => {});
+      }, 220);
+    }
+
+    async function toggleVoiceRecording() {
+      if (state.mediaRecorder?.state === "recording") {
+        state.mediaRecorder.requestData?.();
+        state.mediaRecorder.stop();
+        return;
+      }
+      if (!navigator.mediaDevices?.getUserMedia || !window.MediaRecorder) {
+        showToast("Этот браузер не поддерживает запись голоса.");
+        return;
+      }
+      try {
+        if (state.call?.localStream) {
+          showToast("Сначала заверши звонок, потом записывай голосовое.");
+          return;
+        }
+        const mimeType = supportedRecorderMime();
+        state.recordStream = await navigator.mediaDevices.getUserMedia({
+          audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true }
+        });
+        state.recordChunks = [];
+        state.mediaRecorder = mimeType
+          ? new MediaRecorder(state.recordStream, { mimeType })
+          : new MediaRecorder(state.recordStream);
+        state.mediaRecorder.ondataavailable = (event) => {
+          if (event.data?.size) state.recordChunks.push(event.data);
+        };
+        state.mediaRecorder.onstop = async () => {
+          clearTimeout(state.recordStopTimer);
+          els.voiceButton.classList.remove("recording");
+          state.recordStream?.getTracks?.().forEach((track) => track.stop());
+          state.recordStream = null;
+          const recordedType = normalizeMimeType(state.mediaRecorder?.mimeType || mimeType || state.recordChunks[0]?.type, "audio/webm");
+          const blob = new Blob(state.recordChunks, { type: recordedType });
+          state.mediaRecorder = null;
+          try {
+            state.selectedAttachment = await readBlobAsData(blob, `voice-${Date.now()}.${audioExtension(recordedType)}`);
+            renderAttachmentPreview();
+            showToast("Голосовое готово. Нажми отправить.");
+          } catch (error) {
+            showToast(error.message);
+          }
+        };
+        state.mediaRecorder.onerror = (event) => {
+          showToast(event.error?.message || "Ошибка записи голоса.");
+        };
+        state.mediaRecorder.start(1000);
+        els.voiceButton.classList.add("recording");
+        showToast("Идет запись. Нажми микрофон еще раз, чтобы остановить.");
+        state.recordStopTimer = setTimeout(() => {
+          if (state.mediaRecorder?.state === "recording") {
+            state.mediaRecorder.requestData?.();
+            state.mediaRecorder.stop();
+          }
+        }, 60000);
+      } catch (error) {
+        clearTimeout(state.recordStopTimer);
+        els.voiceButton.classList.remove("recording");
+        state.recordStream?.getTracks?.().forEach((track) => track.stop());
+        state.recordStream = null;
+        state.mediaRecorder = null;
+        showToast(mediaErrorMessage(error));
+      }
+    }
+
+    async function refreshAll() {
+      const data = await api("/api/me");
+      state.token = "";
+      localStorage.removeItem("orbit-token");
+      state.user = data.user;
+      state.users = applyContactFlags(data.users || []);
+      state.rooms = data.rooms || [];
+      els.authView.classList.add("hidden");
+      els.appView.classList.remove("hidden");
+      renderShell();
+      if (!state.eventSource) startEvents();
+      setupNotifications().catch(() => {});
+      await openRoom(state.roomId, true);
+      if (state.initialNotificationsOpen) {
+        state.initialNotificationsOpen = false;
+        openNotifyPanel().catch(() => {});
+      }
+    }
+
+    function startEvents() {
+      stopEvents();
+      if (!state.user || !window.EventSource) return;
+      const source = new EventSource("/api/events");
+      state.eventSource = source;
+      source.addEventListener("message", (event) => {
+        const data = JSON.parse(event.data);
+        const inCurrentRoom = mergeMessage(data.message);
+        loadRooms();
+        if (!inCurrentRoom && data.message?.senderId !== state.user.id) {
+          showToast(`Новое сообщение от ${data.message.sender?.nickname || "пользователя"}`);
+        }
+        showMessageNotification(data.message).catch(() => {});
+      });
+      source.addEventListener("users", (event) => {
+        const data = JSON.parse(event.data);
+        state.users = applyContactFlags(data.users || []);
+        renderShell();
+      });
+      source.addEventListener("rooms", () => loadRooms());
+      source.addEventListener("call", (event) => {
+        handleCallEvent(JSON.parse(event.data)).catch((error) => showToast(error.message));
+      });
+      source.addEventListener("message-update", (event) => {
+        updateMessageLocal(JSON.parse(event.data).message);
+      });
+      source.addEventListener("pins", (event) => {
+        const data = JSON.parse(event.data);
+        if (data.roomId === state.roomId) applyPins(data.pins || []);
+      });
+      source.addEventListener("typing", (event) => {
+        receiveTyping(JSON.parse(event.data));
+      });
+      source.addEventListener("read", (event) => {
+        const data = JSON.parse(event.data);
+        if (data.roomId === state.roomId) openRoom(state.roomId, true).catch(() => {});
+      });
+      source.onerror = () => {
+        setTimeout(() => {
+          if (state.user && (!state.eventSource || state.eventSource.readyState === EventSource.CLOSED)) startEvents();
+        }, 2500);
+      };
+    }
+
+    function stopEvents() {
+      if (state.eventSource) state.eventSource.close();
+      state.eventSource = null;
+    }
+
+    async function loadRooms() {
+      try {
+        const data = await api("/api/rooms");
+        state.rooms = data.rooms || [];
+        renderShell();
+      } catch {}
+    }
+
+    els.loginTab.addEventListener("click", () => setAuthMode("login"));
+    els.registerTab.addEventListener("click", () => setAuthMode("register"));
+    els.forgotPasswordButton.addEventListener("click", () => {
+      els.resetEmail.value = $("loginEmail").value || "";
+      setAuthMode("reset-request");
+    });
+    els.backToLoginButton.addEventListener("click", () => setAuthMode("login"));
+    els.cancelResetButton.addEventListener("click", () => {
+      state.resetToken = "";
+      history.replaceState(null, "", location.pathname);
+      setAuthMode("login");
+    });
+
+    els.loginForm.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      els.authError.textContent = "";
+      try {
+        const data = await api("/api/login", {
+          method: "POST",
+          body: {
+            email: $("loginEmail").value,
+            password: $("loginPassword").value
+          }
+        });
+        saveSession(data.token);
+        await refreshAll();
+        showToast("Ты вошел в аккаунт.");
+        if (state.user && !state.user.emailVerified) showToast("Почта аккаунта ещё не подтверждена.");
+      } catch (error) {
+        els.authError.textContent = error.message;
+      }
+    });
+
+    els.registerForm.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      els.authError.textContent = "";
+      try {
+        const data = await api("/api/register", {
+          method: "POST",
+          body: {
+            nickname: $("registerNickname").value,
+            email: $("registerEmail").value,
+            password: $("registerPassword").value
+          }
+        });
+        saveSession(data.token);
+        await refreshAll();
+        showToast("Аккаунт создан.");
+        showVerificationToast(data.emailVerification);
+      } catch (error) {
+        els.authError.textContent = error.message;
+      }
+    });
+
+    els.resetRequestForm.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      els.authError.textContent = "";
+      try {
+        const data = await api("/api/password/request-reset", {
+          method: "POST",
+          body: { email: els.resetEmail.value }
+        });
+        showAuthResult(data.passwordReset, data.message || "Если почта есть, письмо отправлено.");
+      } catch (error) {
+        els.authError.textContent = error.message;
+      }
+    });
+
+    els.resetFinishForm.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      els.authError.textContent = "";
+      try {
+        await api("/api/password/reset", {
+          method: "POST",
+          body: { token: state.resetToken, password: els.resetPassword.value }
+        });
+        state.resetToken = "";
+        history.replaceState(null, "", location.pathname);
+        setAuthMode("login");
+        showToast("Пароль изменён. Теперь войди заново.");
+      } catch (error) {
+        els.authError.textContent = error.message;
+      }
+    });
+
+    els.chatsTab.addEventListener("click", () => {
+      state.activeTab = "chats";
+      renderList();
+    });
+
+    els.contactsTab.addEventListener("click", () => {
+      state.activeTab = "contacts";
+      renderList();
+    });
+
+    els.searchInput.addEventListener("input", () => {
+      state.search = els.searchInput.value;
+      if (!state.search.trim()) {
+        state.searchUsers = [];
+        state.searchLoading = false;
+        clearTimeout(state.searchTimer);
+      } else {
+        schedulePeopleSearch();
+      }
+      renderList();
+    });
+
+    els.attachButton.addEventListener("click", () => {
+      els.fileInput.click();
+    });
+
+    els.fileInput.addEventListener("change", async () => {
+      const file = els.fileInput.files?.[0];
+      if (!file) return;
+      try {
+        state.selectedAttachment = await readFileAsData(file, MAX_CLIENT_FILE_BYTES);
+        renderAttachmentPreview();
+      } catch (error) {
+        clearAttachment();
+        showToast(error.message);
+      }
+    });
+
+    els.voiceButton.addEventListener("click", () => {
+      toggleVoiceRecording().catch((error) => showToast(error.message));
+    });
+
+    els.messageSearch.addEventListener("input", () => {
+      state.messageSearch = els.messageSearch.value;
+      clearTimeout(els.messageSearch.timer);
+      els.messageSearch.timer = setTimeout(() => openRoom(state.roomId, true), 260);
+    });
+
+    els.clearMessageSearch.addEventListener("click", () => {
+      state.messageSearch = "";
+      els.messageSearch.value = "";
+      openRoom(state.roomId, true).catch((error) => showToast(error.message));
+    });
+
+    els.cancelEditButton.addEventListener("click", cancelEdit);
+
+    els.composer.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      const text = els.messageInput.value.trim();
+      const attachment = state.selectedAttachment;
+      const replyToId = state.replyToMessageId;
+      if (!text && !attachment) return;
+      els.messageInput.value = "";
+      clearAttachment();
+      try {
+        if (state.editingMessageId) {
+          const data = await api("/api/messages/edit", {
+            method: "POST",
+            body: { messageId: state.editingMessageId, text }
+          });
+          cancelEdit();
+          updateMessageLocal(data.message);
+          loadRooms();
+          return;
+        }
+        const data = await api("/api/messages", {
+          method: "POST",
+          body: { roomId: state.roomId, text, attachment, replyToId }
+        });
+        state.replyToMessageId = "";
+        renderReplyBar();
+        mergeMessage(data.message);
+        if (data.rooms) {
+          state.rooms = data.rooms;
+          renderShell();
+        }
+      } catch (error) {
+        els.messageInput.value = text;
+        if (attachment) {
+          state.selectedAttachment = attachment;
+          renderAttachmentPreview();
+        }
+        state.replyToMessageId = replyToId;
+        renderReplyBar();
+        showToast(error.message);
+      }
+    });
+
+    els.messageInput.addEventListener("keydown", (event) => {
+      if (event.key === "Enter" && !event.shiftKey) {
+        event.preventDefault();
+        els.composer.requestSubmit();
+      }
+    });
+
+    els.messageInput.addEventListener("input", sendTyping);
+
+    els.logoutButton.addEventListener("click", async () => {
+      try {
+        await unsubscribePushCurrentDevice();
+        await api("/api/logout", { method: "POST" });
+      } catch {}
+      clearSession();
+      els.appView.classList.add("hidden");
+      els.authView.classList.remove("hidden");
+      showToast("Ты вышел.");
+    });
+
+    els.profileButton.addEventListener("click", () => {
+      els.profileNickname.value = state.user?.nickname || "";
+      els.profileEmail.value = state.user?.pendingEmail || state.user?.email || "";
+      els.profileBio.value = state.user?.bio || "";
+      state.avatarDraft = null;
+      state.removeAvatar = false;
+      setAvatarElement(els.profileAvatarPreview, state.user, "Я");
+      els.profileError.textContent = "";
+      renderProfileEmailStatus();
+      els.profilePanel.classList.remove("hidden");
+    });
+
+    els.closeProfile.addEventListener("click", () => {
+      els.profilePanel.classList.add("hidden");
+    });
+
+    els.closeUserProfile.addEventListener("click", closeUserProfile);
+
+    els.userProfilePanel.addEventListener("click", (event) => {
+      if (event.target === els.userProfilePanel) closeUserProfile();
+    });
+
+    els.securityButton.addEventListener("click", () => {
+      openSecurityPanel().catch((error) => {
+        els.securityError.textContent = error.message;
+        showToast(error.message);
+      });
+    });
+
+    els.closeSecurityPanel.addEventListener("click", () => {
+      els.securityPanel.classList.add("hidden");
+    });
+
+    els.revokeSessionsButton.addEventListener("click", () => {
+      revokeOtherSessions().catch((error) => {
+        els.securityError.textContent = error.message;
+        showToast(error.message);
+      });
+    });
+
+    els.notifyButton.addEventListener("click", () => {
+      openNotifyPanel().catch((error) => showToast(error.message));
+    });
+
+    els.enableNotifyButton.addEventListener("click", () => {
+      requestNotifications().catch((error) => {
+        els.notifyError.textContent = error.message;
+        showToast(error.message);
+      });
+    });
+
+    els.installAppButton.addEventListener("click", () => {
+      installApp().catch((error) => showToast(error.message));
+    });
+
+    els.testNotifyButton.addEventListener("click", () => {
+      sendTestNotification().catch((error) => {
+        els.notifyError.textContent = error.message;
+        showToast(error.message);
+      });
+    });
+
+    els.copyAppLinkButton.addEventListener("click", () => {
+      copyAppLink().catch((error) => showToast(error.message));
+    });
+
+    els.closeNotifyPanel.addEventListener("click", closeNotifyPanel);
+
+    els.notifyPanel.addEventListener("click", (event) => {
+      if (event.target === els.notifyPanel) closeNotifyPanel();
+    });
+
+    els.newGroupButton.addEventListener("click", openGroupPanel);
+
+    els.closeGroupPanel.addEventListener("click", closeGroupPanel);
+
+    els.groupPanel.addEventListener("click", (event) => {
+      if (event.target === els.groupPanel) closeGroupPanel();
+    });
+
+    els.groupForm.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      els.groupError.textContent = "";
+      try {
+        const data = await api("/api/groups", {
+          method: "POST",
+          body: {
+            name: els.groupName.value,
+            memberIds: Array.from(state.groupDraftIds)
+          }
+        });
+        state.rooms = data.rooms || state.rooms;
+        closeGroupPanel();
+        renderShell();
+        await openRoom(data.group.roomId);
+        showToast("Группа создана.");
+      } catch (error) {
+        els.groupError.textContent = error.message;
+      }
+    });
+
+    els.roomInfoButton.addEventListener("click", () => {
+      openRoomPanel().catch((error) => showToast(error.message));
+    });
+
+    els.closeRoomPanel.addEventListener("click", () => {
+      els.roomPanel.classList.add("hidden");
+    });
+
+    els.roomPanel.addEventListener("click", (event) => {
+      if (event.target === els.roomPanel) els.roomPanel.classList.add("hidden");
+    });
+
+    els.leaveGroupButton.addEventListener("click", () => {
+      const room = currentRoom();
+      if (room.type !== "group") return;
+      if (!confirm("Выйти из этой группы?")) return;
+      manageGroup("leave").then(() => {
+        els.roomPanel.classList.add("hidden");
+        openRoom("global", true).catch(() => {});
+      });
+    });
+
+    els.mediaButton.addEventListener("click", () => {
+      openMediaPanel().catch((error) => showToast(error.message));
+    });
+
+    els.closeMediaPanel.addEventListener("click", () => {
+      els.mediaPanel.classList.add("hidden");
+    });
+
+    els.mediaPanel.addEventListener("click", (event) => {
+      if (event.target === els.mediaPanel) els.mediaPanel.classList.add("hidden");
+    });
+
+    els.viewProfileChat.addEventListener("click", async () => {
+      if (!state.viewUser) return;
+      const userId = state.viewUser.id;
+      closeUserProfile();
+      await openDirect(userId);
+    });
+
+    els.viewProfileContact.addEventListener("click", async () => {
+      const user = state.viewUser ? findUser(state.viewUser.id) || state.viewUser : null;
+      if (!user) return;
+      try {
+        await setContact(user.id, user.isContact ? "remove" : "add");
+        showToast(user.isContact ? "Контакт убран." : "Контакт сохранён.");
+      } catch (error) {
+        showToast(error.message);
+      }
+    });
+
+    els.viewProfileBlock.addEventListener("click", () => {
+      if (state.viewUser?.id) toggleBlockUser(state.viewUser.id);
+    });
+
+    els.viewProfileReport.addEventListener("click", () => {
+      if (state.viewUser?.id) reportUser(state.viewUser.id);
+    });
+
+    els.avatarButton.addEventListener("click", () => {
+      els.avatarInput.click();
+    });
+
+    els.avatarInput.addEventListener("change", async () => {
+      const file = els.avatarInput.files?.[0];
+      if (!file) return;
+      try {
+        const avatar = await readFileAsData(file, MAX_CLIENT_AVATAR_BYTES);
+        if (!avatar.mimeType.startsWith("image/")) throw new Error("Для аватарки нужна картинка.");
+        state.avatarDraft = avatar;
+        state.removeAvatar = false;
+        els.profileAvatarPreview.style.background = state.user?.avatarColor || "#46d9ff";
+        els.profileAvatarPreview.innerHTML = `<img src="${escapeHtml(avatar.data)}" alt="">`;
+      } catch (error) {
+        els.avatarInput.value = "";
+        els.profileError.textContent = error.message;
+      }
+    });
+
+    els.removeAvatarButton.addEventListener("click", () => {
+      state.avatarDraft = null;
+      state.removeAvatar = true;
+      els.avatarInput.value = "";
+      els.profileAvatarPreview.style.background = state.user?.avatarColor || "#46d9ff";
+      els.profileAvatarPreview.textContent = initials(state.user?.nickname || "Я");
+    });
+
+    els.sendVerificationButton.addEventListener("click", async () => {
+      els.profileError.textContent = "";
+      try {
+        const data = await api("/api/email/send-verification", { method: "POST" });
+        state.user = data.user || state.user;
+        renderProfileEmailStatus(data.emailVerification);
+        showVerificationToast(data.emailVerification);
+      } catch (error) {
+        els.profileError.textContent = error.message;
+      }
+    });
+
+    els.profileForm.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      els.profileError.textContent = "";
+      try {
+        const data = await api("/api/profile", {
+          method: "POST",
+          body: {
+            nickname: els.profileNickname.value,
+            email: els.profileEmail.value,
+            bio: els.profileBio.value,
+            avatar: state.avatarDraft,
+            removeAvatar: state.removeAvatar
+          }
+        });
+        state.user = data.user;
+        state.avatarDraft = null;
+        state.removeAvatar = false;
+        els.avatarInput.value = "";
+        els.profileEmail.value = state.user?.pendingEmail || state.user?.email || "";
+        renderProfileEmailStatus(data.emailVerification);
+        const keepProfileOpen = data.emailVerification?.devLink || data.emailVerification?.needsMailSetup || data.emailVerification?.error;
+        if (!keepProfileOpen) els.profilePanel.classList.add("hidden");
+        renderShell();
+        showVerificationToast(data.emailVerification);
+        showToast("Профиль сохранен.");
+      } catch (error) {
+        els.profileError.textContent = error.message;
+      }
+    });
+
+    els.backButton.addEventListener("click", () => {
+      els.appView.classList.remove("chat-open");
+    });
+
+    els.audioCallButton.addEventListener("click", () => {
+      startAudioCall().catch((error) => showToast(error.message));
+    });
+
+    els.callButton.addEventListener("click", () => {
+      startVideoCall().catch((error) => showToast(error.message));
+    });
+
+    els.copyRoomLinkButton.addEventListener("click", () => {
+      copyRoomLink().catch((error) => showToast(error.message));
+    });
+
+    els.acceptCallButton.addEventListener("click", () => {
+      acceptIncomingCall().catch((error) => showToast(error.message));
+    });
+
+    els.rejectCallButton.addEventListener("click", () => {
+      rejectIncomingCall().catch((error) => showToast(error.message));
+    });
+
+    els.endCallButton.addEventListener("click", () => {
+      endCurrentCall(true).catch((error) => showToast(error.message));
+    });
+
+    els.muteCallButton.addEventListener("click", toggleMute);
+
+    els.cameraCallButton.addEventListener("click", toggleCamera);
+
+    els.copyCallInviteButton.addEventListener("click", () => {
+      copyCallInvite().catch((error) => showToast(error.message));
+    });
+
+    els.refreshButton.addEventListener("click", () => refreshAll().catch((error) => showToast(error.message)));
+
+    window.addEventListener("beforeinstallprompt", (event) => {
+      event.preventDefault();
+      state.deferredInstallPrompt = event;
+      updateInstallButton();
+    });
+
+    window.addEventListener("appinstalled", () => {
+      state.deferredInstallPrompt = null;
+      updateInstallButton();
+      showToast("Orbit Chat установлен как приложение.");
+    });
+
+    window.addEventListener("online", () => {
+      updateNetworkBanner();
+      showToast("Интернет вернулся.");
+      refreshAll().catch(() => {});
+    });
+
+    window.addEventListener("offline", updateNetworkBanner);
+
+    async function boot() {
+      try {
+        await refreshAll();
+      } catch {
+        clearSession();
+      }
+    }
+
+    if (state.resetToken) {
+      clearSession();
+      setAuthMode("reset-finish");
+    } else {
+      setAuthMode("login");
+    }
+    updateNetworkBanner();
+    if (!state.resetToken) boot();
+    setInterval(() => {
+      if (state.user) loadRooms();
+    }, 12000);
+  </script>
+</body>
+</html>

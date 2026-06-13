@@ -1,0 +1,6 @@
+node_modules/
+data/
+*.log
+*.zip
+orbit-chat-data.json
+.env
