@@ -1,0 +1,33 @@
+{
+  "expo": {
+    "name": "Orbit Chat",
+    "slug": "orbit-chat",
+    "version": "1.5.9",
+    "orientation": "portrait",
+    "icon": "./assets/icon-1024.png",
+    "scheme": "orbitchat",
+    "userInterfaceStyle": "dark",
+    "splash": {
+      "image": "./assets/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#020716"
+    },
+    "ios": {
+      "bundleIdentifier": "YOUR_BUNDLE_ID",
+      "buildNumber": "1",
+      "supportsTablet": true,
+      "infoPlist": {
+        "NSCameraUsageDescription": "Orbit Chat uses the camera only when you start a video call.",
+        "NSMicrophoneUsageDescription": "Orbit Chat uses the microphone for audio calls, video calls, and voice messages.",
+        "NSPhotoLibraryUsageDescription": "Orbit Chat uses photo access only when you choose an image to send or set as an avatar.",
+        "NSPhotoLibraryAddUsageDescription": "Orbit Chat may save exported chat files or media when you choose to save them."
+      },
+      "config": {
+        "usesNonExemptEncryption": false
+      }
+    },
+    "extra": {
+      "appUrl": "https://YOUR_RENDER_URL"
+    }
+  }
+}
