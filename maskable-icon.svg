@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Orbit Chat">
+  <defs>
+    <radialGradient id="bg" cx="30%" cy="22%" r="86%">
+      <stop offset="0" stop-color="#46d9ff" stop-opacity=".7"/>
+      <stop offset=".5" stop-color="#12334a"/>
+      <stop offset="1" stop-color="#071017"/>
+    </radialGradient>
+    <linearGradient id="ring" x1="82" y1="118" x2="432" y2="390">
+      <stop stop-color="#46d9ff"/>
+      <stop offset=".5" stop-color="#9eff8f"/>
+      <stop offset="1" stop-color="#ff6aa5"/>
+    </linearGradient>
+  </defs>
+  <rect width="512" height="512" fill="url(#bg)"/>
+  <circle cx="256" cy="256" r="176" fill="#08131c" opacity=".78"/>
+  <path d="M86 278c61-116 242-132 340-28-58 132-250 146-340 28Z" fill="none" stroke="url(#ring)" stroke-width="34" stroke-linecap="round"/>
+  <circle cx="256" cy="256" r="78" fill="#071017" stroke="#eef8ff" stroke-width="10"/>
+  <circle cx="256" cy="256" r="42" fill="#46d9ff"/>
+  <circle cx="333" cy="172" r="18" fill="#ff6aa5"/>
+  <circle cx="164" cy="346" r="16" fill="#9eff8f"/>
+</svg>
