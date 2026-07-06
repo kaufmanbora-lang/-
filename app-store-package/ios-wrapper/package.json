@@ -1,0 +1,22 @@
+{
+  "name": "orbit-chat-ios-wrapper",
+  "version": "1.5.7",
+  "private": true,
+  "main": "node_modules/expo/AppEntry.js",
+  "scripts": {
+    "start": "expo start",
+    "ios": "expo run:ios",
+    "build:ios": "eas build -p ios --profile production",
+    "submit:ios": "eas submit -p ios --latest"
+  },
+  "dependencies": {
+    "expo": "~53.0.0",
+    "react": "19.0.0",
+    "react-native": "0.79.0",
+    "react-native-webview": "^13.13.5"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.25.2",
+    "eas-cli": "^16.0.1"
+  }
+}
