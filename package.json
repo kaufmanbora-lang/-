@@ -1,0 +1,20 @@
+{
+  "name": "orbit-chat",
+  "version": "1.5.7",
+  "description": "Mobile-first worldwide messenger web app with accounts and live chat.",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "check": "node qa-check.js",
+    "check:security": "node security-check.js",
+    "smoke:orbit": "node orbit-plus-smoke-test.js"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {
+    "nodemailer": "9.0.3",
+    "pg": "8.22.0",
+    "web-push": "3.6.7"
+  }
+}
